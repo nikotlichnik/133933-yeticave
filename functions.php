@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Функция-шаблонизатор
  * @param string $name
@@ -35,4 +34,17 @@ function format_price($price) {
     $formatted_price .= ' ₽';
 
     return $formatted_price;
+}
+
+/**
+ * Возвращает значение таймера для лота
+ * @return string
+ */
+function get_timer() {
+    $dateNow = new DateTime('now');
+    $dateTomorrow = new DateTime('tomorrow');
+    $datesDiff = $dateTomorrow->diff($dateNow);
+    $timer = $datesDiff->format('%H:%I');
+
+    return $timer;
 }

@@ -65,7 +65,7 @@ SELECT
   l.img_path,
   MAX(b.bet)   AS current_price,
   COUNT(b.bet) AS bet_counter,
-  c.name
+  c.name       AS category
 FROM lots l
   JOIN categories c ON l.category = c.id
   LEFT JOIN bets b ON l.id = b.lot

@@ -39,6 +39,7 @@ function get_lots($con) {
               l.name,
               l.start_price,
               l.img_path,
+              l.expiration_date,
               MAX(b.bet)   AS current_price,
               COUNT(b.bet) AS bet_counter,
               c.name       AS category
@@ -68,8 +69,8 @@ function get_lot($con, $id) {
               l.img_path,
               l.description,
               l.bet_step,
+              l.expiration_date,
               MAX(b.bet)   AS current_price,
-              COUNT(b.bet) AS bet_counter,
               c.name       AS category
             FROM lots l
               JOIN categories c ON l.category = c.id
@@ -120,13 +121,20 @@ function format_price($price) {
 
 /**
  * Возвращает значение таймера для лота
+ * @param $date_finish
  * @return string
  */
-function get_timer() {
-    $dateNow = new DateTime('now');
-    $dateTomorrow = new DateTime('tomorrow');
-    $datesDiff = $dateTomorrow->diff($dateNow);
-    $timer = $datesDiff->format('%H:%I');
+function get_timer($date_finish) {
+    $date_now = new DateTime('now');
+    $date_end = new DateTime($date_finish);
+    $timer = '0 д 00:00:00';
+
+    if ($date_end < $date_now) {
+        return $timer;
+    }
+
+    $dates_diff = $date_end->diff($date_now);
+    $timer = $dates_diff->format('%d д %H:%I:%S');
 
     return $timer;
 }

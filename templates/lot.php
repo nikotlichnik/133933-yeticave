@@ -32,9 +32,7 @@
         </div>
         <div class="lot-item__right">
             <div class="lot-item__state">
-                <div class="lot-item__timer timer">
-                    10:54:12
-                </div>
+                <div class="lot-item__timer timer"><?=get_timer($lot['expiration_date']); ?></div>
                 <div class="lot-item__cost-state">
                     <div class="lot-item__rate">
                         <span class="lot-item__amount">Текущая цена</span>

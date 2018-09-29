@@ -71,7 +71,8 @@ FROM lots l
   LEFT JOIN bets b ON l.id = b.lot
 WHERE l.expiration_date > now()
 GROUP BY l.id
-ORDER BY l.creation_date DESC;
+ORDER BY l.creation_date DESC
+LIMIT 9;
 
 # 3. показать лот по его id. Получите также название категории, к которой принадлежит лот
 SELECT

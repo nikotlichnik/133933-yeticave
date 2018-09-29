@@ -46,7 +46,8 @@ function get_lots($con) {
               LEFT JOIN bets b ON l.id = b.lot
             WHERE l.expiration_date > now()
             GROUP BY l.id
-            ORDER BY l.creation_date DESC';
+            ORDER BY l.creation_date DESC
+            LIMIT 9';
     $result = mysqli_query($con, $sql);
 
     return mysqli_fetch_all($result, MYSQLI_ASSOC);

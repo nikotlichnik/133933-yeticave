@@ -18,7 +18,7 @@ function connect_db() {
 
 /**
  * Получает из БД ассоциативный массив с категориями для меню
- * @param $con
+ * @param mysqli $con
  * @return array|null
  */
 function get_categories($con) {
@@ -35,6 +35,7 @@ function get_categories($con) {
  */
 function get_lots($con) {
     $sql = 'SELECT
+              l.id,
               l.name,
               l.start_price,
               l.img_path,
@@ -51,6 +52,33 @@ function get_lots($con) {
     $result = mysqli_query($con, $sql);
 
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+/**
+ * Получает данные о лоте по id
+ * @param mysqli $con
+ * @param int $id Идентификатор лота
+ * @return array|null
+ */
+function get_lot($con, $id) {
+    $safe_id = mysqli_real_escape_string($con, $id);
+    $sql = "SELECT
+              l.name,
+              l.start_price,
+              l.img_path,
+              l.description,
+              l.bet_step,
+              MAX(b.bet)   AS current_price,
+              COUNT(b.bet) AS bet_counter,
+              c.name       AS category
+            FROM lots l
+              JOIN categories c ON l.category = c.id
+              LEFT JOIN bets b ON l.id = b.lot
+            WHERE l.id = $safe_id
+            GROUP BY l.id";
+    $result = mysqli_query($con, $sql);
+
+    return mysqli_fetch_assoc($result);
 }
 
 /**

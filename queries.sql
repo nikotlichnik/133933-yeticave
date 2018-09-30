@@ -60,6 +60,7 @@ FROM categories;
 # 2. получить самые новые, открытые лоты. Каждый лот должен включать название,
 #    стартовую цену, ссылку на изображение, цену, количество ставок, название категории
 SELECT
+  l.id,
   l.name,
   l.start_price,
   l.img_path,
@@ -71,7 +72,8 @@ FROM lots l
   LEFT JOIN bets b ON l.id = b.lot
 WHERE l.expiration_date > now()
 GROUP BY l.id
-ORDER BY l.creation_date DESC;
+ORDER BY l.creation_date DESC
+LIMIT 9;
 
 # 3. показать лот по его id. Получите также название категории, к которой принадлежит лот
 SELECT

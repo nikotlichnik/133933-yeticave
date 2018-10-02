@@ -22,7 +22,7 @@ function connect_db() {
  * @return array|null
  */
 function get_categories($con) {
-    $sql = 'SELECT name FROM categories';
+    $sql = 'SELECT id, name FROM categories';
     $result = mysqli_query($con, $sql);
 
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
@@ -117,6 +117,44 @@ function format_price($price) {
     $formatted_price .= ' ₽';
 
     return $formatted_price;
+}
+
+/**
+ * Проверяет соответствие даты указанному формату и наличие разницы во времени
+ * @param string $user_date
+ * @param string $format Формат даты, переданной в $user_date
+ * @return bool
+ */
+function validate_date($user_date, $format) {
+    $date = DateTime::createFromFormat($format, $user_date);
+    if (!$date) {
+        return false;
+    }
+
+    // Проверяем соответствие формату
+    if ($date->format($format) !== $user_date) {
+        return false;
+    }
+
+    // Проверяем наличие разницы во времени
+    $date_now = new DateTime('now');
+    if ($date < $date_now) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Преобразует дату из формата пользователя к формату для записи в БД
+ * @param string $user_date
+ * @param string $format Формат даты, переданной в $user_date
+ * @return string
+ */
+function get_db_timestamp($user_date, $format) {
+    $db_format = 'Y-m-d H:i:s';
+    $date = DateTime::createFromFormat('!'.$format, $user_date); // ! для того, чтобы время было 00:00:00
+    return $date->format($db_format);
 }
 
 /**

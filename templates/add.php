@@ -49,7 +49,11 @@
             <select id="category" name="category">
                 <option disabled selected>Выберите категорию</option>
                 <?php foreach ($categories as $category): ?>
-                    <option value="<?= $category['id']; ?>"><?= $category['name']; ?></option>
+                    <?php if($category['id'] === $input_value): ?>
+                        <option value="<?= $category['id']; ?>" selected><?= $category['name']; ?></option>
+                    <?php else: ?>
+                        <option value="<?= $category['id']; ?>"><?= $category['name']; ?></option>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </select>
             <span class="form__error"><?= $error_message; ?></span>

@@ -153,7 +153,7 @@ function validate_date($user_date, $format) {
  */
 function get_db_timestamp($user_date, $format) {
     $db_format = 'Y-m-d H:i:s';
-    $date = DateTime::createFromFormat('!'.$format, $user_date); // ! для того, чтобы время было 00:00:00
+    $date = DateTime::createFromFormat('!' . $format, $user_date); // ! для того, чтобы время было 00:00:00
     return $date->format($db_format);
 }
 
@@ -175,4 +175,114 @@ function get_timer($date_finish) {
     $timer = $dates_diff->format('%d д %H:%I:%S');
 
     return $timer;
+}
+
+/**
+ * @param array $form_data Ассоциативный массив с данными формы
+ * @param array $required_fields Массив с именами обязательных полей
+ * @return array Ассоциативный массив с ошибками
+ */
+function check_required_text_fields($form_data, $required_fields) {
+    $errors = [];
+
+    foreach ($required_fields as $field) {
+        if (empty($form_data[$field])) {
+            $errors[$field] = 'Заполните это поле';
+        }
+    }
+
+    return $errors;
+}
+
+/**
+ * @param array $file Ассоциативный массив $_FILES['name']
+ * @param string $field Имя поля ввода файла
+ * @param array $allowed_mime Допустимые MIME типы для файла
+ * @param int $max_file_size Максимальный размер файла в байтах
+ * @param bool $is_required Обязательность поля ввода
+ * @return array
+ */
+function check_file($file, $field, $allowed_mime, $max_file_size, $is_required) {
+    $error = [];
+
+    if ($is_required or $file['name']) {
+        if ($file['error'] == UPLOAD_ERR_NO_FILE) {
+            $error[$field] = 'Загрузите файл с изображением';
+        } else {
+            $file_size = $file['size'];
+            $file_tmp_name = $file['tmp_name'];
+
+            if ($file_size > $max_file_size) {
+                $error[$field] = 'Максимальный размер файла 200Кб';
+            }
+
+            $is_correct_mime = false;
+            foreach ($allowed_mime as $mime) {
+                if (mime_content_type($file_tmp_name) == $mime) {
+                    $is_correct_mime = true;
+                }
+            }
+
+            if (!$is_correct_mime) {
+                $error[$field] = 'Файл должен иметь расширение .jpg, .jpeg или .png';
+            }
+        }
+    }
+
+    return $error;
+}
+
+/**
+ * Валидирует переданное значение указанным фильтром
+ * @param string|int $value
+ * @param string $field_name
+ * @param int $filter
+ * @param string $error_text
+ * @param array $options
+ * @return array
+ */
+function check_special_value($value, $field_name, $filter, $error_text, $options = []) {
+    $error = [];
+
+    if (!filter_var($value, $filter, $options)) {
+        $error[$field_name] = $error_text;
+    }
+
+    return $error;
+}
+
+/**
+ * Проверяет, есть ли указанный email в БД
+ * @param mysqli $con
+ * @param string $email
+ * @return array
+ */
+function check_unique_email($con, $email) {
+    $error = [];
+    $safe_email = mysqli_real_escape_string($con, $email);
+
+    $sql = "SELECT id FROM users WHERE email = '$safe_email'";
+    $result = mysqli_query($con, $sql);
+
+    if (mysqli_num_rows($result)) {
+        $error['email'] = 'Введённый email уже используется';
+    }
+
+    return $error;
+}
+
+/**
+ * Сохраняет файл из формы и возврящает сгенерированное имя
+ * @param array $file Ассоциативный массив $_FILES['name']
+ * @param string $folder Строка в формате "foldername/"
+ * @return string
+ */
+function save_file($file, $folder) {
+    $file_path = __DIR__ . '/' . $folder;
+    $file_name_parts = explode('.', $file['name']);
+    $file_extension = end($file_name_parts);
+    $file_name = uniqid() . '.' . $file_extension;
+    move_uploaded_file($file['tmp_name'], $file_path . $file_name);
+
+    return $file_name;
 }

@@ -382,6 +382,7 @@ main.container {
 }
 
 .nav__list {
+  padding: 0;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;

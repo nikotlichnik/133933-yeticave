@@ -252,6 +252,7 @@ function check_special_value($value, $field_name, $filter, $error_text, $options
 }
 
 /**
+ * Проверяет, есть ли указанный email в БД
  * @param mysqli $con
  * @param string $email
  * @return array
@@ -268,4 +269,20 @@ function check_unique_email($con, $email) {
     }
 
     return $error;
+}
+
+/**
+ * Сохраняет файл из формы и возврящает сгенерированное имя
+ * @param array $file Ассоциативный массив $_FILES['name']
+ * @param string $folder Строка в формате "foldername/"
+ * @return string
+ */
+function save_file($file, $folder) {
+    $file_path = __DIR__ . '/' . $folder;
+    $file_name_parts = explode('.', $file['name']);
+    $file_extension = end($file_name_parts);
+    $file_name = uniqid() . '.' . $file_extension;
+    move_uploaded_file($file['tmp_name'], $file_path . $file_name);
+
+    return $file_name;
 }

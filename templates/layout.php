@@ -33,10 +33,10 @@
                         <?php else: ?>
                             <ul class="user-menu__list">
                                 <li class="user-menu__item">
-                                    <a href="#">Регистрация</a>
+                                    <a href="sign-up.php">Регистрация</a>
                                 </li>
                                 <li class="user-menu__item">
-                                    <a href="sign-up.php">Вход</a>
+                                    <a href="#">Вход</a>
                                 </li>
                             </ul>
                         <?php endif; ?>

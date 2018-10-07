@@ -16,7 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $date_field = 'lot-date';
 
     $min_price = 1;
+
     $date_format = 'd.m.Y'; // ДД.ММ.ГГГГ
+
     $photo = $_FILES[$photo_field];
     $max_photo_size = 200000;
     $allowed_photo_mime = ['image/png', 'image/jpeg'];
@@ -55,10 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'lot' => $lot,
             'errors' => $errors]);
     } else {
-        // Сохранение изображения
-        $photo_path = __DIR__ . '/' . $photo_folder;
-        $photo_name = $_FILES[$photo_field]['name'];
-        move_uploaded_file($photo['tmp_name'], $photo_path . $photo_name);
+        $photo_name = save_file($photo, $photo_folder);
 
         // Сохраняем данные в БД
         $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, creation_date, expiration_date, author, category)

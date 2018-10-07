@@ -37,9 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $db_avatar_path = null;
 
         if ($avatar['name']) {
-            $avatar_path = __DIR__ . '/' . $avatar_folder;
-            move_uploaded_file($avatar['tmp_name'], $avatar_path . $avatar['name']);
-            $db_avatar_path = $avatar_folder . $avatar['name'];
+            $avatar_name = save_file($avatar, $avatar_folder);
+            $db_avatar_path = $avatar_folder . $avatar_name;
         }
 
         // Сохраняем данные в БД

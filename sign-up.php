@@ -1,7 +1,11 @@
 <?php
 require_once 'mysql_helper.php';
 require_once 'functions.php';
-require_once 'temp_user.php';
+require_once 'start_session.php';
+
+if (isset($_SESSION['user_id'])) {
+    header('Location: index.php');
+}
 
 $title = 'YetiCave - Регистрация';
 $con = connect_db();
@@ -63,8 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 $content = include_template('layout.php', [
     'content' => $page_content,
     'title' => $title,
-    'is_auth' => $is_auth,
-    'user_name' => $user_name,
+    'user' => $user,
     'categories' => $categories]);
 
 print($content);

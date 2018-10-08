@@ -25,11 +25,11 @@
 
                         <?php if ($user): ?>
                             <div class="user-menu__image">
-                                <?php $img_src = $user['avatar_path'] ?? 'img/user.jpg' ?>
-                                <img src="img/user.jpg" width="40" height="40" alt="Пользователь">
+                                <?php $img_src = $user['avatar'] ?? 'img/user.jpg' ?>
+                                <img src="<?= $img_src; ?>" width="40" height="40" alt="Пользователь">
                             </div>
                             <div class="user-menu__logged">
-                                <p><?=$user['name']; ?></p>
+                                <p><?= $user['name']; ?></p>
                                 <a href="logout.php">Выйти</a>
                             </div>
                         <?php else: ?>

@@ -1,6 +1,6 @@
 <?php
 require_once 'functions.php';
-require_once 'temp_user.php';
+require_once 'start_session.php';
 
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     $lot_id = $_GET['id'];
@@ -13,12 +13,11 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
         $lot['current_price'] = $lot['current_price'] ?? $lot['start_price'];
 
-        $page_content = include_template('lot.php', ['lot' => $lot]);
+        $page_content = include_template('lot.php', ['lot' => $lot, 'user' => $user]);
         $content = include_template('layout.php', [
             'content' => $page_content,
             'title' => $title,
-            'is_auth' => $is_auth,
-            'user_name' => $user_name,
+            'user' => $user,
             'categories' => get_categories($con)]);
 
         print($content);

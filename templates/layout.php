@@ -30,6 +30,7 @@
                             </div>
                             <div class="user-menu__logged">
                                 <p><?=$user['name']; ?></p>
+                                <a href="logout.php">Выйти</a>
                             </div>
                         <?php else: ?>
                             <ul class="user-menu__list">

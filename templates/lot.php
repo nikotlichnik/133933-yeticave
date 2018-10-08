@@ -31,6 +31,7 @@
             <p class="lot-item__description"><?=$lot['description']; ?></p>
         </div>
         <div class="lot-item__right">
+            <?php if($user): ?>
             <div class="lot-item__state">
                 <div class="lot-item__timer timer"><?=get_timer($lot['expiration_date']); ?></div>
                 <div class="lot-item__cost-state">
@@ -43,6 +44,7 @@
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

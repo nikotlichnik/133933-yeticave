@@ -1,5 +1,9 @@
 <?php
+require_once 'functions.php';
+
 session_start();
+
+$con = connect_db();
 
 $user = [];
 

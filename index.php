@@ -1,17 +1,10 @@
 <?php
 date_default_timezone_set("Europe/Moscow");
 
+$con = connect_db();
+
 require_once 'functions.php';
-
-$con = connect_db();
-
-session_start();
-$user = [];
-if (isset($_SESSION['user_id'])) {
-    $user = get_user_info($con, $_SESSION['user_id']);
-}
-
-$con = connect_db();
+require_once 'start_session.php';
 
 $title = 'YetiCave - Главная страница.';
 

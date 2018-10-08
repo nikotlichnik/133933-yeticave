@@ -3,7 +3,7 @@ require_once 'mysql_helper.php';
 require_once 'functions.php';
 require_once 'start_session.php';
 
-if (isset($_SESSION['user_id'])) {
+if ($user) {
     header('Location: index.php');
 }
 

@@ -54,8 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $res = mysqli_stmt_execute($stmt);
 
-        // header('Location: login.php');
-        die('Форма отправлена'); // Временно
+        header('Location: login.php');
     }
 } else {
     $page_content = include_template('sign-up.php', ['categories' => $categories]);

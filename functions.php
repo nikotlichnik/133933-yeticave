@@ -286,3 +286,49 @@ function save_file($file, $folder) {
 
     return $file_name;
 }
+
+/**
+ * Возвращает результат запроса на пароль по email
+ * @param mysqli $con
+ * @param string $email
+ * @return bool|mysqli_result
+ */
+function get_password_result($con, $email){
+    $safe_email = mysqli_real_escape_string($con, $email);
+    $sql = "SELECT password FROM users WHERE email ='$safe_email'";
+
+    return mysqli_query($con, $sql);
+}
+
+/**
+ * Возвращает id пользователя для указанного email
+ * @param mysqli $con
+ * @param string $email
+ * @return int
+ */
+function get_id($con, $email){
+    $safe_email = mysqli_real_escape_string($con, $email);
+    $sql = "SELECT id FROM users WHERE email ='$safe_email'";
+    $res = mysqli_query($con, $sql);
+    $id = mysqli_fetch_assoc($res)['id'];
+
+    return $id;
+}
+
+/**
+ * @param mysqli $con
+ * @param int $id Идентификатор пользователя
+ * @return array Данные о пользователе
+ */
+function get_user_info($con, $id){
+    $sql = "SELECT email, name, avatar_path FROM users WHERE id = $id";
+    $res = mysqli_query($con, $sql);
+    $user = mysqli_fetch_assoc($res);
+
+    return [
+        'id' => $id,
+        'email' => $user['email'],
+        'name' => $user['name'],
+        'avatar' => $user['avatar_path']
+    ];
+}

@@ -2,7 +2,7 @@
 date_default_timezone_set("Europe/Moscow");
 
 require_once 'functions.php';
-require_once 'temp_user.php';
+require_once 'start_session.php';
 
 $con = connect_db();
 
@@ -14,8 +14,7 @@ $page_content = include_template('index.php', ['lots' => get_lots($con), 'catego
 $content = include_template('layout.php', [
     'content' => $page_content,
     'title' => $title,
-    'is_auth' => $is_auth,
-    'user_name' => $user_name,
+    'user' => $user,
     'categories' => get_categories($con)]);
 
 print($content);

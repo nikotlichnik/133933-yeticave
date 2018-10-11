@@ -89,6 +89,33 @@ function get_lot($con, $id) {
 }
 
 /**
+ * Выполняет поисковый запрос пользователя
+ * @param mysqli $con
+ * @param string $user_search_query
+ * @return array|null Ассоциативный массив с объявлениями
+ */
+function search_lots($con, $user_search_query){
+    $safe_search = mysqli_real_escape_string($con, $user_search_query);
+    $sql = "SELECT l.id,
+              l.name,
+              l.start_price,
+              l.img_path,
+              l.expiration_date,
+              MAX(b.bet)   AS current_price,
+              COUNT(b.bet) AS bet_counter,
+              c.name       AS category
+            FROM lots l
+              JOIN categories c ON l.category = c.id
+              LEFT JOIN bets b ON l.id = b.lot
+            WHERE MATCH(l.name, l.description) AGAINST ('$safe_search')
+            GROUP BY l.id
+            ORDER BY l.creation_date DESC";
+    $res = mysqli_query($con, $sql);
+
+    return mysqli_fetch_all($res, MYSQLI_ASSOC);
+}
+
+/**
  * Проверяет делал ли пользователь ставку для лота
  * @param mysqli $con
  * @param int $user_id

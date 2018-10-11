@@ -49,3 +49,4 @@ CREATE TABLE bets (
   lot    INT UNSIGNED NOT NULL
 );
 
+CREATE FULLTEXT INDEX ft_lot_search ON lots(name, description);

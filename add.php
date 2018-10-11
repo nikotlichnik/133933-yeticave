@@ -73,7 +73,7 @@ if (!$user) {
                 $lot['lot-rate'],
                 $lot['lot-step'],
                 get_db_timestamp($lot['lot-date'], $date_format),
-                1,
+                $user['id'],
                 $lot['category']]);
 
             $res = mysqli_stmt_execute($stmt);

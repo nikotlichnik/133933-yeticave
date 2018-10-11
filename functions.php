@@ -296,7 +296,8 @@ function get_timer($date_finish) {
     }
 
     $dates_diff = $date_end->diff($date_now);
-    $timer = $dates_diff->format('%d д %H:%I:%S');
+    $days = $dates_diff->d;
+    $timer = $dates_diff->format('%d ' . make_plural(['день', 'дня', 'дней'], $days) . ' %H:%I:%S');
 
     return $timer;
 }

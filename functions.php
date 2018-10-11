@@ -64,12 +64,14 @@ function get_lots($con) {
 function get_lot($con, $id) {
     $safe_id = mysqli_real_escape_string($con, $id);
     $sql = "SELECT
+              l.id,
               l.name,
               l.start_price,
               l.img_path,
               l.description,
               l.bet_step,
               l.expiration_date,
+              l.author,
               MAX(b.bet)   AS current_price,
               c.name       AS category
             FROM lots l
@@ -78,8 +80,130 @@ function get_lot($con, $id) {
             WHERE l.id = $safe_id
             GROUP BY l.id";
     $result = mysqli_query($con, $sql);
+    $lot = mysqli_fetch_assoc($result);
 
-    return mysqli_fetch_assoc($result);
+    $lot['current_price'] = $lot['current_price'] ?? $lot['start_price'];
+    $lot['min_bet'] = $lot['current_price'] + $lot['bet_step'];
+
+    return $lot;
+}
+
+/**
+ * Проверяет делал ли пользователь ставку для лота
+ * @param mysqli $con
+ * @param int $user_id
+ * @param int $lot_id
+ * @return bool|mysqli_result
+ *
+ */
+function is_already_bet($con, $user_id, $lot_id) {
+    $safe_id = mysqli_real_escape_string($con, $lot_id);
+    $sql = "SELECT EXISTS(SELECT id FROM bets WHERE author=$user_id AND lot=$safe_id)";
+    $res = mysqli_query($con, $sql);
+
+    return mysqli_fetch_array($res)[0];
+}
+
+/**
+ * Проверяет не истекло ли время лота
+ * @param mysqli $con
+ * @param int $lot_id
+ * @return bool
+ */
+function is_lot_expired($con, $lot_id) {
+    $safe_id = mysqli_real_escape_string($con, $lot_id);
+    $sql = "SELECT expiration_date FROM lots WHERE id = $safe_id";
+    $res = mysqli_query($con, $sql);
+    $expiration_date = mysqli_fetch_assoc($res)['expiration_date'];
+
+    $date_lot = new DateTime($expiration_date);
+    $date_now = new DateTime('now');
+
+    return $date_now > $date_lot;
+}
+
+/**
+ * Проверяет, доступно ли добавление ставки лоту
+ * @param mysqli $con
+ * @param array $user
+ * @param array $lot
+ * @return bool
+ */
+function is_allowed_to_bet($con, $user, $lot) {
+    $is_already_bet = is_already_bet($con, $user['id'], $lot['id']);
+    $is_lot_expired = is_lot_expired($con, $lot['id']);
+    $is_user_author = $lot['author'] === $user['id'];
+
+    return !$is_already_bet and !$is_lot_expired and !$is_user_author and $user;
+}
+
+/**
+ * Получает ставки для лота
+ * @param mysqli $con
+ * @param int $lot_id
+ * @return array|null
+ */
+function get_bets($con, $lot_id) {
+    $safe_id = mysqli_real_escape_string($con, $lot_id);
+    $sql = "SELECT b.bet, b.date, u.name
+            FROM bets b
+            JOIN users u ON b.author = u.id
+            WHERE b.lot = $safe_id
+            ORDER BY b.date DESC";
+    $res = mysqli_query($con, $sql);
+    $bets = mysqli_fetch_all($res, MYSQLI_ASSOC);
+
+    return $bets;
+}
+
+/**
+ * Возвращает относительную дату для ставки
+ * @param string $date
+ * @return string
+ */
+function format_bet_date($date) {
+    $bet_date = new DateTime($date);
+    $now_date = new DateTime('now');
+
+    $date_diff = $bet_date->diff($now_date);
+    $days = $date_diff->d;
+    $hours = $date_diff->h;
+    $minutes = $date_diff->i;
+
+    if ($days > 0) {
+        $formatted_date = $bet_date->format('d.m.y в H:i');
+    } elseif ($hours > 0) {
+        $formatted_date = $hours . ' ' . make_plural(['час', 'часа', 'часов'], $hours) . ' назад';
+    } elseif ($minutes > 0) {
+        $formatted_date = $minutes . ' ' . make_plural(['минуту', 'минуты', 'минут'], $minutes) . ' назад';
+    } else {
+        $formatted_date = 'Только что';
+    }
+
+    return $formatted_date;
+}
+
+/**
+ * Возвращает нужную форму слова для числительного (например 'день', 'дня' или 'дней')
+ * @param array $options Массив из трёх словоформ [ед.число, ед.число род.падеж, мн.число род.падеж]
+ * @param int $number
+ * @return mixed
+ */
+function make_plural($options, $number) {
+    $word = $options[2];
+    $remainder = $number % 10;
+
+    if ($remainder == 1 && $number !== 11) {
+        $word = $options[0];
+    }
+
+    if (($remainder == 2 && $number !== 12) ||
+        ($remainder == 3 && $number !== 13) ||
+        ($remainder == 4 && $number !== 14)) {
+        $word = $options[1];
+    }
+
+    return $word;
 }
 
 /**
@@ -172,7 +296,8 @@ function get_timer($date_finish) {
     }
 
     $dates_diff = $date_end->diff($date_now);
-    $timer = $dates_diff->format('%d д %H:%I:%S');
+    $days = $dates_diff->d;
+    $timer = $dates_diff->format('%d ' . make_plural(['день', 'дня', 'дней'], $days) . ' %H:%I:%S');
 
     return $timer;
 }
@@ -293,7 +418,7 @@ function save_file($file, $folder) {
  * @param string $email
  * @return bool|mysqli_result
  */
-function get_password_result($con, $email){
+function get_password_result($con, $email) {
     $safe_email = mysqli_real_escape_string($con, $email);
     $sql = "SELECT password FROM users WHERE email ='$safe_email'";
 
@@ -306,7 +431,7 @@ function get_password_result($con, $email){
  * @param string $email
  * @return int
  */
-function get_id($con, $email){
+function get_id($con, $email) {
     $safe_email = mysqli_real_escape_string($con, $email);
     $sql = "SELECT id FROM users WHERE email ='$safe_email'";
     $res = mysqli_query($con, $sql);
@@ -320,7 +445,7 @@ function get_id($con, $email){
  * @param int $id Идентификатор пользователя
  * @return array Данные о пользователе
  */
-function get_user_info($con, $id){
+function get_user_info($con, $id) {
     $sql = "SELECT email, name, avatar_path FROM users WHERE id = $id";
     $res = mysqli_query($con, $sql);
     $user = mysqli_fetch_assoc($res);

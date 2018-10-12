@@ -11,7 +11,7 @@ $title = 'YetiCave - Регистрация';
 $con = connect_db();
 $categories = get_categories($con);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $_POST;
 
     $required_fields = ['email', 'password', 'name', 'message'];

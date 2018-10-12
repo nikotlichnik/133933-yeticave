@@ -13,7 +13,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
     $errors = [];
     // Если пользователь залогинен и отправлена форма
-    if ($user and $_SERVER['REQUEST_METHOD'] == 'POST') {
+    if ($user and $_SERVER['REQUEST_METHOD'] === 'POST') {
         $bet = $_POST;
         $required_fields = ['cost'];
         $errors += check_required_text_fields($bet, $required_fields);

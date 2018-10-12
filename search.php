@@ -48,6 +48,7 @@ $content = include_template('layout.php', [
     'content' => $page_content,
     'title' => $title,
     'user' => $user,
-    'categories' => $categories]);
+    'categories' => $categories,
+    'user_search_query' => $user_search_query]);
 
 print($content);

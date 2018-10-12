@@ -10,7 +10,7 @@ if (!$user) {
     $con = connect_db();
     $categories = get_categories($con);
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lot = $_POST;
 
         $required_fields = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];

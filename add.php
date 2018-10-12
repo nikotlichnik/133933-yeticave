@@ -63,21 +63,7 @@ if (!$user) {
         } else {
             $photo_name = save_file($photo, $photo_folder);
 
-            // Сохраняем данные в БД
-            $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
-                VALUES (?, ?, ?, ?, ?, STR_TO_DATE(?, '$db_date_format'), ?, ?)";
-
-            $stmt = db_get_prepare_stmt($con, $sql, [
-                $lot['lot-name'],
-                $lot['message'],
-                $photo_folder . $photo_name,
-                $lot['lot-rate'],
-                $lot['lot-step'],
-                $lot['lot-date'],
-                $user['id'],
-                $lot['category']]);
-
-            $res = mysqli_stmt_execute($stmt);
+            insert_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_format);
 
             $new_id = mysqli_insert_id($con);
 

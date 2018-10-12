@@ -515,3 +515,20 @@ function get_href_search_attr($search_query, $page) {
 
     return '';
 }
+
+function insert_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_format){
+    $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
+                VALUES (?, ?, ?, ?, ?, STR_TO_DATE(?, '$db_date_format'), ?, ?)";
+
+    $stmt = db_get_prepare_stmt($con, $sql, [
+        $lot['lot-name'],
+        $lot['message'],
+        $photo_folder . $photo_name,
+        $lot['lot-rate'],
+        $lot['lot-step'],
+        $lot['lot-date'],
+        $user['id'],
+        $lot['category']]);
+
+    mysqli_stmt_execute($stmt);
+}

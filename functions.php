@@ -242,13 +242,13 @@ function make_plural($options, $number) {
     $word = $options[2];
     $remainder = $number % 10;
 
-    if ($remainder == 1 && $number !== 11) {
+    if ($remainder === 1 && $number !== 11) {
         $word = $options[0];
     }
 
-    if (($remainder == 2 && $number !== 12) ||
-        ($remainder == 3 && $number !== 13) ||
-        ($remainder == 4 && $number !== 14)) {
+    if (($remainder === 2 && $number !== 12) ||
+        ($remainder === 3 && $number !== 13) ||
+        ($remainder === 4 && $number !== 14)) {
         $word = $options[1];
     }
 
@@ -375,7 +375,7 @@ function check_file($file, $field, $allowed_mime, $max_file_size, $is_required) 
     $error = [];
 
     if ($is_required or $file['name']) {
-        if ($file['error'] == UPLOAD_ERR_NO_FILE) {
+        if ($file['error'] === UPLOAD_ERR_NO_FILE) {
             $error[$field] = 'Загрузите файл с изображением';
         } else {
             $file_size = $file['size'];
@@ -387,7 +387,7 @@ function check_file($file, $field, $allowed_mime, $max_file_size, $is_required) 
 
             $is_correct_mime = false;
             foreach ($allowed_mime as $mime) {
-                if (mime_content_type($file_tmp_name) == $mime) {
+                if (mime_content_type($file_tmp_name) === $mime) {
                     $is_correct_mime = true;
                 }
             }

@@ -41,12 +41,13 @@ $page_content = include_template('search.php', [
     'cur_page' => $cur_page,
     'previous_page' => $previous_page,
     'next_page' => $next_page,
-    'page_range' => $page_range]);
+    'page_range' => $page_range,
+    'categories' => $categories]);
 
 $content = include_template('layout.php', [
     'content' => $page_content,
     'title' => $title,
     'user' => $user,
-    'categories' => get_categories($con)]);
+    'categories' => $categories]);
 
 print($content);

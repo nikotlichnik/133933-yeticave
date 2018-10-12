@@ -3,6 +3,8 @@ require_once 'functions.php';
 require_once 'mysql_helper.php';
 require_once 'start_session.php';
 
+$categories = get_categories($con);
+
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     $lot_id = $_GET['id'];
 
@@ -55,13 +57,14 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
             'bet' => $bet ?? '',
             'bets' => $bets,
             'errors' => $errors,
-            'is_allowed_to_bet' => $is_allowed_to_bet]);
+            'is_allowed_to_bet' => $is_allowed_to_bet,
+            'categories' => $categories]);
 
         $content = include_template('layout.php', [
             'content' => $page_content,
             'title' => $title,
             'user' => $user,
-            'categories' => get_categories($con)]);
+            'categories' => $categories]);
 
         print($content);
     } else {

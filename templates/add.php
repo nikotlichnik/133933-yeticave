@@ -1,25 +1,5 @@
-<nav class="nav">
-    <ul class="nav__list container">
-        <li class="nav__item">
-            <a href="all-lots.html">Доски и лыжи</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Крепления</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Ботинки</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Одежда</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Инструменты</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Разное</a>
-        </li>
-    </ul>
-</nav>
+<?= include_template('_navigation.php', ['categories' => $categories]) ?>
+
 <?php $form_class = isset($errors) ? 'form--invalid' : ''; ?>
 <form class="form form--add-lot container <?= $form_class; ?>" action="add.php" method="post"
       enctype="multipart/form-data"> <!-- form--invalid -->

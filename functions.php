@@ -89,12 +89,29 @@ function get_lot($con, $id) {
 }
 
 /**
+ * @param mysqli $con
+ * @param string $user_search_query
+ * @return int Число результатов по поисковому запросу
+ */
+function count_search_results($con, $user_search_query) {
+    $safe_search = mysqli_real_escape_string($con, $user_search_query);
+    $sql = "SELECT COUNT(id) as counter
+            FROM lots
+            WHERE MATCH(name, description) AGAINST ('$safe_search')";
+    $res = mysqli_query($con, $sql);
+
+    return mysqli_fetch_assoc($res)['counter'];
+}
+
+/**
  * Выполняет поисковый запрос пользователя
  * @param mysqli $con
  * @param string $user_search_query
+ * @param $limit
+ * @param $offset
  * @return array|null Ассоциативный массив с объявлениями
  */
-function search_lots($con, $user_search_query){
+function search_lots($con, $user_search_query, $limit, $offset) {
     $safe_search = mysqli_real_escape_string($con, $user_search_query);
     $sql = "SELECT l.id,
               l.name,
@@ -109,7 +126,8 @@ function search_lots($con, $user_search_query){
               LEFT JOIN bets b ON l.id = b.lot
             WHERE MATCH(l.name, l.description) AGAINST ('$safe_search')
             GROUP BY l.id
-            ORDER BY l.creation_date DESC";
+            LIMIT $limit
+            OFFSET $offset";
     $res = mysqli_query($con, $sql);
 
     return mysqli_fetch_all($res, MYSQLI_ASSOC);
@@ -483,4 +501,18 @@ function get_user_info($con, $id) {
         'name' => $user['name'],
         'avatar' => $user['avatar_path']
     ];
+}
+
+/**
+ * Возвращает строку с параметрами GET запроса для страницы поиска
+ * @param string $search_query Поисковый запрос пользователя
+ * @param int $page Номер страницы
+ * @return string
+ */
+function get_href_search_attr($search_query, $page) {
+    if ($page) {
+        return 'href="?' . http_build_query(['search' => htmlspecialchars($search_query), 'page' => $page]) . '"';
+    }
+
+    return '';
 }

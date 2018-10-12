@@ -4,33 +4,45 @@ require_once 'start_session.php';
 
 $con = connect_db();
 $lots = [];
+$user_search_query = '';
+$lots_per_page = 9;
+$number_of_pages = 1;
 
-if (isset($_GET['search'])) {
-    $user_search = $_GET['search'];
-    $safe_search = mysqli_real_escape_string($con, $user_search);
-    $sql = "SELECT l.id,
-              l.name,
-              l.start_price,
-              l.img_path,
-              l.expiration_date,
-              MAX(b.bet)   AS current_price,
-              COUNT(b.bet) AS bet_counter,
-              c.name       AS category
-            FROM lots l
-              JOIN categories c ON l.category = c.id
-              LEFT JOIN bets b ON l.id = b.lot
-            WHERE MATCH(l.name, l.description) AGAINST ('$safe_search')
-            GROUP BY l.id
-            ORDER BY l.creation_date DESC";
-    $res = mysqli_query($con, $sql);
-    $lots = mysqli_fetch_all($res, MYSQLI_ASSOC);
+if (isset($_GET['page'])) {
+    $cur_page = (int)$_GET['page'] ?? 1;
+} else {
+    $cur_page = 1;
 }
 
-$title = 'YetiCave - Поиск.';
+if (isset($_GET['search'])) {
+    $user_search_query = $_GET['search'];
+
+    $number_of_lots = count_search_results($con, $user_search_query);
+    $number_of_pages = (int)ceil($number_of_lots / $lots_per_page);
+    $offset = $lots_per_page * ($cur_page - 1);
+
+    if ($number_of_lots) {
+        $lots = search_lots($con, $user_search_query, $lots_per_page, $offset);
+    }
+}
+
+$title = 'YetiCave - Поиск';
 
 $categories = get_categories($con);
 
-$page_content = include_template('search.php', ['lots' => $lots, 'user_search' => $user_search]);
+$page_range = range(1, $number_of_pages);
+$previous_page = array_search($cur_page - 1, $page_range) !== false ? $cur_page - 1 : null;
+$next_page = array_search($cur_page + 1, $page_range) !== false ? $cur_page + 1 : null;
+
+$page_content = include_template('search.php', [
+    'lots' => $lots,
+    'user_search_query' => $user_search_query,
+    'number_of_pages' => $number_of_pages,
+    'cur_page' => $cur_page,
+    'previous_page' => $previous_page,
+    'next_page' => $next_page,
+    'page_range' => $page_range]);
+
 $content = include_template('layout.php', [
     'content' => $page_content,
     'title' => $title,

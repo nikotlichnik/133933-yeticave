@@ -11,7 +11,7 @@
     ?>
     <div class="form__item  <?= $input_class; ?>"> <!-- form__item--invalid -->
         <label for="email">E-mail*</label>
-        <input id="email" type="text" name="email" placeholder="Введите e-mail" value="<?= $input_value; ?>">
+        <input id="email" type="text" name="email" placeholder="Введите e-mail" value="<?= htmlspecialchars($input_value); ?>">
         <span class="form__error"><?= $error_message; ?></span>
     </div>
     <?php
@@ -22,7 +22,7 @@
     ?>
     <div class="form__item  <?= $input_class; ?>">
         <label for="password">Пароль*</label>
-        <input id="password" type="password" name="password" placeholder="Введите пароль" value="<?= $input_value; ?>">
+        <input id="password" type="password" name="password" placeholder="Введите пароль" value="<?= htmlspecialchars($input_value); ?>">
         <span class="form__error"><?= $error_message; ?></span>
     </div>
     <?php
@@ -33,7 +33,7 @@
     ?>
     <div class="form__item  <?= $input_class; ?>">
         <label for="name">Имя*</label>
-        <input id="name" type="text" name="name" placeholder="Введите имя" value="<?= $input_value; ?>">
+        <input id="name" type="text" name="name" placeholder="Введите имя" value="<?= htmlspecialchars($input_value); ?>">
         <span class="form__error"><?= $error_message; ?></span>
     </div>
     <?php
@@ -44,7 +44,7 @@
     ?>
     <div class="form__item  <?= $input_class; ?>">
         <label for="message">Контактные данные*</label>
-        <textarea id="message" name="message" placeholder="Напишите как с вами связаться"><?= $input_value; ?></textarea>
+        <textarea id="message" name="message" placeholder="Напишите как с вами связаться"><?= htmlspecialchars($input_value); ?></textarea>
         <span class="form__error"><?= $error_message; ?></span>
     </div>
     <?php

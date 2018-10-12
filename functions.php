@@ -522,18 +522,17 @@ function get_href_search_attr($search_query, $page) {
  * @param mysqli $con
  * @param array $user Ассоциативный массив с данными о пользователе
  * @param array $lot Ассоциативный массив с данными из формы о лоте
- * @param string $photo_folder Имя папки с изображением
- * @param string $photo_name Имя изображения
+ * @param string $db_photo_path Путь к изображению лота
  * @param string $db_date_format Формат даты $lot['lot-date'] для функции STR_TO_DATE()
  */
-function add_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_format){
+function add_lot($con, $user, $lot, $db_photo_path, $db_date_format){
     $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
                 VALUES (?, ?, ?, ?, ?, STR_TO_DATE(?, '$db_date_format'), ?, ?)";
 
     $stmt = db_get_prepare_stmt($con, $sql, [
         $lot['lot-name'],
         $lot['message'],
-        $photo_folder . $photo_name,
+        $db_photo_path,
         $lot['lot-rate'],
         $lot['lot-step'],
         $lot['lot-date'],
@@ -557,6 +556,26 @@ function add_bet($con, $user, $bet, $lot_id){
         $user['id'],
         $lot_id
     ]);
+
+    mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Добавляет пользователя в БД
+ * @param mysqli $con
+ * @param array $user Ассоциативный массив с данными из формы о пользователе
+ * @param string $db_avatar_path Путь к аватару пользователя
+ */
+function add_user($con, $user, $db_avatar_path){
+    $sql = "INSERT INTO users (email, name, password, avatar_path, contacts)
+                VALUES (?, ?, ?, ?, ?)";
+
+    $stmt = db_get_prepare_stmt($con, $sql, [
+        $user['email'],
+        $user['name'],
+        password_hash($user['password'], PASSWORD_DEFAULT),
+        $db_avatar_path,
+        $user['message']]);
 
     mysqli_stmt_execute($stmt);
 }

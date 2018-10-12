@@ -61,8 +61,9 @@ if (!$user) {
                 'errors' => $errors]);
         } else {
             $photo_name = save_file($photo, $photo_folder);
+            $db_photo_path = $photo_folder . $photo_name;
 
-            add_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_format);
+            add_lot($con, $user, $lot, $db_photo_path, $db_date_format);
 
             $new_id = mysqli_insert_id($con);
 

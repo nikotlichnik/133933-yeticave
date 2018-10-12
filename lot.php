@@ -1,6 +1,5 @@
 <?php
 require_once 'functions.php';
-require_once 'mysql_helper.php';
 require_once 'start_session.php';
 
 $categories = get_categories($con);
@@ -33,18 +32,12 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
             $bet_check_options);
 
         if (!$errors){
-            $sql = "INSERT INTO bets (bet, author, lot) VALUES (?, ?, ?)";
-            $stmt = db_get_prepare_stmt($con, $sql, [
-                $bet['cost'],
-                $user['id'],
-                $lot_id
-            ]);
-            mysqli_stmt_execute($stmt);
-
+            add_bet($con, $user, $bet, $lot_id);
             $lot = get_lot($con, $lot_id);
         }
     }
 
+    // Если есть данные о запрашиваемом лоте
     if ($lot) {
         $title = 'YetiCave - ' . $lot['name'];
 

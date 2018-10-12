@@ -1,4 +1,5 @@
 <?php
+require_once 'mysql_helper.php';
 
 /**
  * Возвращает соединение к базе данных
@@ -516,7 +517,16 @@ function get_href_search_attr($search_query, $page) {
     return '';
 }
 
-function insert_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_format){
+/**
+ * Добавляет лот в БД
+ * @param mysqli $con
+ * @param array $user Ассоциативный массив с данными о пользователе
+ * @param array $lot Ассоциативный массив с данными из формы о лоте
+ * @param string $photo_folder Имя папки с изображением
+ * @param string $photo_name Имя изображения
+ * @param string $db_date_format Формат даты $lot['lot-date'] для функции STR_TO_DATE()
+ */
+function add_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_format){
     $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
                 VALUES (?, ?, ?, ?, ?, STR_TO_DATE(?, '$db_date_format'), ?, ?)";
 
@@ -529,6 +539,24 @@ function insert_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_form
         $lot['lot-date'],
         $user['id'],
         $lot['category']]);
+
+    mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Добавляет ставку в БД
+ * @param mysqli $con
+ * @param array $user Ассоциативный массив с данными о пользователе
+ * @param array $bet Ассоциативный массив с данными из формы о ставке
+ * @param int $lot_id Идентификатор лота
+ */
+function add_bet($con, $user, $bet, $lot_id){
+    $sql = "INSERT INTO bets (bet, author, lot) VALUES (?, ?, ?)";
+    $stmt = db_get_prepare_stmt($con, $sql, [
+        $bet['cost'],
+        $user['id'],
+        $lot_id
+    ]);
 
     mysqli_stmt_execute($stmt);
 }

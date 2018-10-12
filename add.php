@@ -1,5 +1,4 @@
 <?php
-require_once 'mysql_helper.php';
 require_once 'functions.php';
 require_once 'start_session.php';
 
@@ -63,7 +62,7 @@ if (!$user) {
         } else {
             $photo_name = save_file($photo, $photo_folder);
 
-            insert_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_format);
+            add_lot($con, $user, $lot, $photo_folder, $photo_name, $db_date_format);
 
             $new_id = mysqli_insert_id($con);
 

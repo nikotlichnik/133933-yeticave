@@ -63,8 +63,8 @@ if (!$user) {
             $photo_name = save_file($photo, $photo_folder);
 
             // Сохраняем данные в БД
-            $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, creation_date, expiration_date, author, category)
-                VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
+            $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = db_get_prepare_stmt($con, $sql, [
                 $lot['lot-name'],

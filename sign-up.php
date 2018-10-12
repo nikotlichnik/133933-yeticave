@@ -46,8 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         // Сохраняем данные в БД
-        $sql = "INSERT INTO users (registration_date, email, name, password, avatar_path, contacts)
-                VALUES (NOW(), ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO users (email, name, password, avatar_path, contacts)
+                VALUES (?, ?, ?, ?, ?)";
 
         $stmt = db_get_prepare_stmt($con, $sql, [
             $user['email'],

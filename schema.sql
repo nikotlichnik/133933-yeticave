@@ -6,7 +6,7 @@ USE yeticave;
 
 CREATE TABLE users (
   id                INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  registration_date TIMESTAMP     NOT NULL,
+  registration_date TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   email             CHAR(255)     NOT NULL,
   name              CHAR(128)     NOT NULL,
   password          CHAR(255)     NOT NULL,
@@ -29,10 +29,10 @@ CREATE TABLE lots (
   img_path        CHAR(255)     NOT NULL,
   start_price     INT UNSIGNED  NOT NULL,
   bet_step        INT UNSIGNED  NOT NULL,
-  creation_date   TIMESTAMP     NOT NULL,
+  creation_date   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   expiration_date TIMESTAMP     NOT NULL,
   author          INT UNSIGNED  NOT NULL,
-  winner          INT UNSIGNED,
+  winner          INT UNSIGNED  DEFAULT NULL,
   category        INT UNSIGNED  NOT NULL
 );
 
@@ -43,7 +43,7 @@ CREATE INDEX lot_description
 
 CREATE TABLE bets (
   id     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  date   TIMESTAMP    NOT NULL,
+  date   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   bet    INT UNSIGNED NOT NULL,
   author INT UNSIGNED NOT NULL,
   lot    INT UNSIGNED NOT NULL

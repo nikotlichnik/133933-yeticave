@@ -175,11 +175,15 @@ function is_lot_expired($con, $lot_id) {
  * @return bool
  */
 function is_allowed_to_bet($con, $user, $lot) {
-    $is_already_bet = is_already_bet($con, $user['id'], $lot['id']);
-    $is_lot_expired = is_lot_expired($con, $lot['id']);
-    $is_user_author = $lot['author'] === $user['id'];
+    if ($user){
+        $is_already_bet = is_already_bet($con, $user['id'], $lot['id']);
+        $is_lot_expired = is_lot_expired($con, $lot['id']);
+        $is_user_author = $lot['author'] === $user['id'];
 
-    return !$is_already_bet and !$is_lot_expired and !$is_user_author and $user;
+        return !$is_already_bet and !$is_lot_expired and !$is_user_author;
+    }
+
+    return false;
 }
 
 /**

@@ -31,7 +31,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
             $bet_check_options);
 
         if (!$errors){
-            $sql = "INSERT INTO bets (date, bet, author, lot) VALUES (NOW(), ?, ?, ?)";
+            $sql = "INSERT INTO bets (bet, author, lot) VALUES (?, ?, ?)";
             $stmt = db_get_prepare_stmt($con, $sql, [
                 $bet['cost'],
                 $user['id'],

@@ -21,6 +21,7 @@ if (!$user) {
         $min_price = 1;
 
         $date_format = 'd.m.Y'; // ДД.ММ.ГГГГ
+        $db_date_format = '%d.%m.%Y'; // ДД.ММ.ГГГГ
 
         $photo = $_FILES[$photo_field];
         $max_photo_size = 200000;
@@ -64,7 +65,7 @@ if (!$user) {
 
             // Сохраняем данные в БД
             $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?, ?, STR_TO_DATE(?, '$db_date_format'), ?, ?)";
 
             $stmt = db_get_prepare_stmt($con, $sql, [
                 $lot['lot-name'],
@@ -72,7 +73,7 @@ if (!$user) {
                 $photo_folder . $photo_name,
                 $lot['lot-rate'],
                 $lot['lot-step'],
-                get_db_timestamp($lot['lot-date'], $date_format),
+                $lot['lot-date'],
                 $user['id'],
                 $lot['category']]);
 

@@ -175,7 +175,7 @@ function is_lot_expired($con, $lot_id) {
  * @return bool
  */
 function is_allowed_to_bet($con, $user, $lot) {
-    if ($user){
+    if ($user) {
         $is_already_bet = is_already_bet($con, $user['id'], $lot['id']);
         $is_lot_expired = is_lot_expired($con, $lot['id']);
         $is_user_author = $lot['author'] === $user['id'];
@@ -326,15 +326,22 @@ function validate_date($user_date, $format) {
 function get_timer($date_finish) {
     $date_now = new DateTime('now');
     $date_end = new DateTime($date_finish);
-    $timer = '0 д 00:00:00';
+    $timer = '00:00:00';
 
     if ($date_end < $date_now) {
         return $timer;
     }
 
     $dates_diff = $date_end->diff($date_now);
+    $years = $dates_diff->y;
+    $months = $dates_diff->m;
     $days = $dates_diff->d;
-    $timer = $dates_diff->format('%d ' . make_plural(['день', 'дня', 'дней'], $days) . ' %H:%I:%S');
+
+    $years_str = $years ? $years . ' ' . make_plural(['год', 'года', 'лет'], $years) . ' ' : '';
+    $months_str = $months ? $months . ' ' . make_plural(['месяц', 'месяца', 'месяцев'], $months) . ' ' : '';
+    $days_str = $days ? $days . ' ' . make_plural(['день', 'дня', 'дней '], $days) : '';
+
+    $timer = $dates_diff->format($years_str . $months_str . $days_str . ' %H:%I:%S');
 
     return $timer;
 }

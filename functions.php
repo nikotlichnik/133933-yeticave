@@ -297,26 +297,37 @@ function format_price($price) {
  * Проверяет соответствие даты указанному формату и наличие разницы во времени
  * @param string $user_date
  * @param string $format Формат даты, переданной в $user_date
- * @return bool
+ * @param string $field Имя поля формы с датой
+ * @return array
  */
-function validate_date($user_date, $format) {
+function check_date($user_date, $format, $field) {
+    $error = [];
+
     $date = DateTime::createFromFormat($format, $user_date);
+
     if (!$date) {
-        return false;
+        $error[$field] = 'Дата должна быть корректной и в формате ДД.ММ.ГГГГ';
+    } else {
+        // Проверяем, что дата не больше 2038 года,
+        // чтобы не попасть в ограничение типа TIMESTAMP в БД
+        $year = (int)$date->format('Y');
+        if ($year > 2038) {
+            $error[$field] = 'Дата не может быть позже 2038 года';
+        }
+
+        // Проверяем соответствие формату
+        if ($date->format($format) !== $user_date) {
+            $error[$field] = 'Дата должна быть корректной и в формате ДД.ММ.ГГГГ';
+        }
+
+        // Проверяем наличие разницы во времени
+        $date_now = new DateTime('now');
+        if ($date < $date_now) {
+            $error[$field] = 'Дата должна быть больше текущей';
+        }
     }
 
-    // Проверяем соответствие формату
-    if ($date->format($format) !== $user_date) {
-        return false;
-    }
-
-    // Проверяем наличие разницы во времени
-    $date_now = new DateTime('now');
-    if ($date < $date_now) {
-        return false;
-    }
-
-    return true;
+    return $error;
 }
 
 /**
@@ -525,7 +536,7 @@ function get_href_search_attr($search_query, $page) {
  * @param string $db_photo_path Путь к изображению лота
  * @param string $db_date_format Формат даты $lot['lot-date'] для функции STR_TO_DATE()
  */
-function add_lot($con, $user, $lot, $db_photo_path, $db_date_format){
+function add_lot($con, $user, $lot, $db_photo_path, $db_date_format) {
     $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
                 VALUES (?, ?, ?, ?, ?, STR_TO_DATE(?, '$db_date_format'), ?, ?)";
 
@@ -549,7 +560,7 @@ function add_lot($con, $user, $lot, $db_photo_path, $db_date_format){
  * @param array $bet Ассоциативный массив с данными из формы о ставке
  * @param int $lot_id Идентификатор лота
  */
-function add_bet($con, $user, $bet, $lot_id){
+function add_bet($con, $user, $bet, $lot_id) {
     $sql = "INSERT INTO bets (bet, author, lot) VALUES (?, ?, ?)";
     $stmt = db_get_prepare_stmt($con, $sql, [
         $bet['cost'],
@@ -566,7 +577,7 @@ function add_bet($con, $user, $bet, $lot_id){
  * @param array $user Ассоциативный массив с данными из формы о пользователе
  * @param string $db_avatar_path Путь к аватару пользователя
  */
-function add_user($con, $user, $db_avatar_path){
+function add_user($con, $user, $db_avatar_path) {
     $sql = "INSERT INTO users (email, name, password, avatar_path, contacts)
                 VALUES (?, ?, ?, ?, ?)";
 

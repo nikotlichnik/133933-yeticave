@@ -31,6 +31,7 @@ if (!$user) {
         $errors = [];
         $errors += check_required_text_fields($lot, $required_fields);
         $errors += check_file($photo, $photo_field, $allowed_photo_mime, $max_photo_size, $is_photo_required);
+        $errors += check_date($lot[$date_field], $date_format, $date_field);
 
         // Проверка поля с ценой и шагом ставки
         $price_check_options = [
@@ -46,11 +47,6 @@ if (!$user) {
                 FILTER_VALIDATE_INT,
                 'Значение должно быть целым числом больше нуля',
                 $price_check_options);
-        }
-
-        // Проверка поля даты
-        if (!validate_date($lot[$date_field], $date_format)) {
-            $errors[$date_field] = 'Дата должна иметь формат ДД.ММ.ГГГГ и быть больше текущей';
         }
 
         // Вывод ошибок, если они есть, иначе отправка формы

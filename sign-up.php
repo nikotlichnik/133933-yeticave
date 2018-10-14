@@ -11,7 +11,7 @@ $title = 'YetiCave - Регистрация';
 $con = connect_db();
 $categories = get_categories($con);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $_POST;
 
     $required_fields = ['email', 'password', 'name', 'message'];
@@ -45,18 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db_avatar_path = $avatar_folder . $avatar_name;
         }
 
-        // Сохраняем данные в БД
-        $sql = "INSERT INTO users (registration_date, email, name, password, avatar_path, contacts)
-                VALUES (NOW(), ?, ?, ?, ?, ?)";
-
-        $stmt = db_get_prepare_stmt($con, $sql, [
-            $user['email'],
-            $user['name'],
-            password_hash($user['password'], PASSWORD_DEFAULT),
-            $db_avatar_path,
-            $user['message']]);
-
-        $res = mysqli_stmt_execute($stmt);
+        add_user($con, $user, $db_avatar_path);
 
         header('Location: login.php');
     }

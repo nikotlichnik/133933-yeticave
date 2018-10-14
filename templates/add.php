@@ -1,25 +1,5 @@
-<nav class="nav">
-    <ul class="nav__list container">
-        <li class="nav__item">
-            <a href="all-lots.html">Доски и лыжи</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Крепления</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Ботинки</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Одежда</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Инструменты</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Разное</a>
-        </li>
-    </ul>
-</nav>
+<?= include_template('_navigation.php', ['categories' => $categories]) ?>
+
 <?php $form_class = isset($errors) ? 'form--invalid' : ''; ?>
 <form class="form form--add-lot container <?= $form_class; ?>" action="add.php" method="post"
       enctype="multipart/form-data"> <!-- form--invalid -->
@@ -34,7 +14,7 @@
         <div class="form__item <?= $input_class; ?>"> <!-- form__item--invalid -->
             <label for="lot-name">Наименование</label>
             <input id="lot-name" type="text" name="lot-name" placeholder="Введите наименование лота"
-                   value="<?= $input_value; ?>">
+                   value="<?=htmlspecialchars($input_value); ?>">
             <span class="form__error"><?= $error_message; ?></span>
         </div>
 
@@ -68,7 +48,7 @@
     ?>
     <div class="form__item form__item--wide <?= $input_class; ?>">
         <label for="message">Описание</label>
-        <textarea id="message" name="message" placeholder="Напишите описание лота"><?= $input_value; ?></textarea>
+        <textarea id="message" name="message" placeholder="Напишите описание лота"><?=htmlspecialchars($input_value); ?></textarea>
         <span class="form__error"><?= $error_message; ?></span>
     </div>
     <?php
@@ -101,7 +81,7 @@
         ?>
         <div class="form__item form__item--small <?= $input_class; ?>">
             <label for="lot-rate">Начальная цена</label>
-            <input id="lot-rate" type="text" name="lot-rate" placeholder="0" value="<?= $input_value; ?>">
+            <input id="lot-rate" type="text" name="lot-rate" placeholder="0" value="<?=htmlspecialchars($input_value); ?>">
             <span class="form__error"><?= $error_message; ?></span>
         </div>
 
@@ -113,7 +93,7 @@
         ?>
         <div class="form__item form__item--small <?= $input_class; ?>">
             <label for="lot-step">Шаг ставки</label>
-            <input id="lot-step" type="text" name="lot-step" placeholder="0" value="<?= $input_value; ?>">
+            <input id="lot-step" type="text" name="lot-step" placeholder="0" value="<?=htmlspecialchars($input_value); ?>">
             <span class="form__error"><?= $error_message; ?></span>
         </div>
 
@@ -125,7 +105,8 @@
         ?>
         <div class="form__item <?= $input_class; ?>">
             <label for="lot-date">Дата окончания торгов</label>
-            <input class="form__input-date" id="lot-date" type="text" name="lot-date" placeholder="ДД.ММ.ГГГГ" value="<?= $input_value; ?>">
+            <input class="form__input-date" id="lot-date" type="text" name="lot-date" placeholder="ДД.ММ.ГГГГ"
+                   value="<?=htmlspecialchars($input_value); ?>">
             <span class="form__error"><?= $error_message; ?></span>
         </div>
     </div>

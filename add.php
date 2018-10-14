@@ -1,5 +1,4 @@
 <?php
-require_once 'mysql_helper.php';
 require_once 'functions.php';
 require_once 'start_session.php';
 
@@ -10,7 +9,7 @@ if (!$user) {
     $con = connect_db();
     $categories = get_categories($con);
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lot = $_POST;
 
         $required_fields = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
@@ -21,6 +20,7 @@ if (!$user) {
         $min_price = 1;
 
         $date_format = 'd.m.Y'; // ДД.ММ.ГГГГ
+        $db_date_format = '%d.%m.%Y'; // ДД.ММ.ГГГГ
 
         $photo = $_FILES[$photo_field];
         $max_photo_size = 200000;
@@ -61,22 +61,9 @@ if (!$user) {
                 'errors' => $errors]);
         } else {
             $photo_name = save_file($photo, $photo_folder);
+            $db_photo_path = $photo_folder . $photo_name;
 
-            // Сохраняем данные в БД
-            $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, creation_date, expiration_date, author, category)
-                VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
-
-            $stmt = db_get_prepare_stmt($con, $sql, [
-                $lot['lot-name'],
-                $lot['message'],
-                $photo_folder . $photo_name,
-                $lot['lot-rate'],
-                $lot['lot-step'],
-                get_db_timestamp($lot['lot-date'], $date_format),
-                $user['id'],
-                $lot['category']]);
-
-            $res = mysqli_stmt_execute($stmt);
+            add_lot($con, $user, $lot, $db_photo_path, $db_date_format);
 
             $new_id = mysqli_insert_id($con);
 

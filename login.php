@@ -11,7 +11,7 @@ $title = 'YetiCave - Вход';
 $con = connect_db();
 $categories = get_categories($con);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login = $_POST;
 
     $required_fields = ['email', 'password'];
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Проверка существования учётной записи
     if (empty($errors)) {
         $res = get_password_result($con, $login['email']);
-        if (mysqli_num_rows($res) == 0) {
+        if (mysqli_num_rows($res) === 0) {
             $errors['email'] = 'Пользователя с таким email не существует';
         }
     }

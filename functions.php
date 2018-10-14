@@ -1,4 +1,5 @@
 <?php
+require_once 'mysql_helper.php';
 
 /**
  * Возвращает соединение к базе данных
@@ -89,6 +90,51 @@ function get_lot($con, $id) {
 }
 
 /**
+ * @param mysqli $con
+ * @param string $user_search_query
+ * @return int Число результатов по поисковому запросу
+ */
+function count_search_results($con, $user_search_query) {
+    $safe_search = mysqli_real_escape_string($con, $user_search_query);
+    $sql = "SELECT COUNT(id) as counter
+            FROM lots
+            WHERE MATCH(name, description) AGAINST ('$safe_search')";
+    $res = mysqli_query($con, $sql);
+
+    return mysqli_fetch_assoc($res)['counter'];
+}
+
+/**
+ * Выполняет поисковый запрос пользователя
+ * @param mysqli $con
+ * @param string $user_search_query
+ * @param $limit
+ * @param $offset
+ * @return array|null Ассоциативный массив с объявлениями
+ */
+function search_lots($con, $user_search_query, $limit, $offset) {
+    $safe_search = mysqli_real_escape_string($con, $user_search_query);
+    $sql = "SELECT l.id,
+              l.name,
+              l.start_price,
+              l.img_path,
+              l.expiration_date,
+              MAX(b.bet)   AS current_price,
+              COUNT(b.bet) AS bet_counter,
+              c.name       AS category
+            FROM lots l
+              JOIN categories c ON l.category = c.id
+              LEFT JOIN bets b ON l.id = b.lot
+            WHERE MATCH(l.name, l.description) AGAINST ('$safe_search')
+            GROUP BY l.id
+            LIMIT $limit
+            OFFSET $offset";
+    $res = mysqli_query($con, $sql);
+
+    return mysqli_fetch_all($res, MYSQLI_ASSOC);
+}
+
+/**
  * Проверяет делал ли пользователь ставку для лота
  * @param mysqli $con
  * @param int $user_id
@@ -130,11 +176,15 @@ function is_lot_expired($con, $lot_id) {
  * @return bool
  */
 function is_allowed_to_bet($con, $user, $lot) {
-    $is_already_bet = is_already_bet($con, $user['id'], $lot['id']);
-    $is_lot_expired = is_lot_expired($con, $lot['id']);
-    $is_user_author = $lot['author'] === $user['id'];
+    if ($user) {
+        $is_already_bet = is_already_bet($con, $user['id'], $lot['id']);
+        $is_lot_expired = is_lot_expired($con, $lot['id']);
+        $is_user_author = $lot['author'] === $user['id'];
 
-    return !$is_already_bet and !$is_lot_expired and !$is_user_author and $user;
+        return !$is_already_bet and !$is_lot_expired and !$is_user_author;
+    }
+
+    return false;
 }
 
 /**
@@ -193,13 +243,13 @@ function make_plural($options, $number) {
     $word = $options[2];
     $remainder = $number % 10;
 
-    if ($remainder == 1 && $number !== 11) {
+    if ($remainder === 1 && $number !== 11) {
         $word = $options[0];
     }
 
-    if (($remainder == 2 && $number !== 12) ||
-        ($remainder == 3 && $number !== 13) ||
-        ($remainder == 4 && $number !== 14)) {
+    if (($remainder === 2 && $number !== 12) ||
+        ($remainder === 3 && $number !== 13) ||
+        ($remainder === 4 && $number !== 14)) {
         $word = $options[1];
     }
 
@@ -270,18 +320,6 @@ function validate_date($user_date, $format) {
 }
 
 /**
- * Преобразует дату из формата пользователя к формату для записи в БД
- * @param string $user_date
- * @param string $format Формат даты, переданной в $user_date
- * @return string
- */
-function get_db_timestamp($user_date, $format) {
-    $db_format = 'Y-m-d H:i:s';
-    $date = DateTime::createFromFormat('!' . $format, $user_date); // ! для того, чтобы время было 00:00:00
-    return $date->format($db_format);
-}
-
-/**
  * Возвращает значение таймера для лота
  * @param $date_finish
  * @return string
@@ -289,15 +327,22 @@ function get_db_timestamp($user_date, $format) {
 function get_timer($date_finish) {
     $date_now = new DateTime('now');
     $date_end = new DateTime($date_finish);
-    $timer = '0 д 00:00:00';
+    $timer = '00:00:00';
 
     if ($date_end < $date_now) {
         return $timer;
     }
 
     $dates_diff = $date_end->diff($date_now);
+    $years = $dates_diff->y;
+    $months = $dates_diff->m;
     $days = $dates_diff->d;
-    $timer = $dates_diff->format('%d ' . make_plural(['день', 'дня', 'дней'], $days) . ' %H:%I:%S');
+
+    $years_str = $years ? $years . ' ' . make_plural(['год', 'года', 'лет'], $years) . ' ' : '';
+    $months_str = $months ? $months . ' ' . make_plural(['месяц', 'месяца', 'месяцев'], $months) . ' ' : '';
+    $days_str = $days ? $days . ' ' . make_plural(['день', 'дня', 'дней '], $days) : '';
+
+    $timer = $dates_diff->format($years_str . $months_str . $days_str . ' %H:%I:%S');
 
     return $timer;
 }
@@ -331,7 +376,7 @@ function check_file($file, $field, $allowed_mime, $max_file_size, $is_required) 
     $error = [];
 
     if ($is_required or $file['name']) {
-        if ($file['error'] == UPLOAD_ERR_NO_FILE) {
+        if ($file['error'] === UPLOAD_ERR_NO_FILE) {
             $error[$field] = 'Загрузите файл с изображением';
         } else {
             $file_size = $file['size'];
@@ -343,7 +388,7 @@ function check_file($file, $field, $allowed_mime, $max_file_size, $is_required) 
 
             $is_correct_mime = false;
             foreach ($allowed_mime as $mime) {
-                if (mime_content_type($file_tmp_name) == $mime) {
+                if (mime_content_type($file_tmp_name) === $mime) {
                     $is_correct_mime = true;
                 }
             }
@@ -456,4 +501,81 @@ function get_user_info($con, $id) {
         'name' => $user['name'],
         'avatar' => $user['avatar_path']
     ];
+}
+
+/**
+ * Возвращает строку с параметрами GET запроса для страницы поиска
+ * @param string $search_query Поисковый запрос пользователя
+ * @param int $page Номер страницы
+ * @return string
+ */
+function get_href_search_attr($search_query, $page) {
+    if ($page) {
+        return 'href="?' . http_build_query(['search' => htmlspecialchars($search_query), 'page' => $page]) . '"';
+    }
+
+    return '';
+}
+
+/**
+ * Добавляет лот в БД
+ * @param mysqli $con
+ * @param array $user Ассоциативный массив с данными о пользователе
+ * @param array $lot Ассоциативный массив с данными из формы о лоте
+ * @param string $db_photo_path Путь к изображению лота
+ * @param string $db_date_format Формат даты $lot['lot-date'] для функции STR_TO_DATE()
+ */
+function add_lot($con, $user, $lot, $db_photo_path, $db_date_format){
+    $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
+                VALUES (?, ?, ?, ?, ?, STR_TO_DATE(?, '$db_date_format'), ?, ?)";
+
+    $stmt = db_get_prepare_stmt($con, $sql, [
+        $lot['lot-name'],
+        $lot['message'],
+        $db_photo_path,
+        $lot['lot-rate'],
+        $lot['lot-step'],
+        $lot['lot-date'],
+        $user['id'],
+        $lot['category']]);
+
+    mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Добавляет ставку в БД
+ * @param mysqli $con
+ * @param array $user Ассоциативный массив с данными о пользователе
+ * @param array $bet Ассоциативный массив с данными из формы о ставке
+ * @param int $lot_id Идентификатор лота
+ */
+function add_bet($con, $user, $bet, $lot_id){
+    $sql = "INSERT INTO bets (bet, author, lot) VALUES (?, ?, ?)";
+    $stmt = db_get_prepare_stmt($con, $sql, [
+        $bet['cost'],
+        $user['id'],
+        $lot_id
+    ]);
+
+    mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Добавляет пользователя в БД
+ * @param mysqli $con
+ * @param array $user Ассоциативный массив с данными из формы о пользователе
+ * @param string $db_avatar_path Путь к аватару пользователя
+ */
+function add_user($con, $user, $db_avatar_path){
+    $sql = "INSERT INTO users (email, name, password, avatar_path, contacts)
+                VALUES (?, ?, ?, ?, ?)";
+
+    $stmt = db_get_prepare_stmt($con, $sql, [
+        $user['email'],
+        $user['name'],
+        password_hash($user['password'], PASSWORD_DEFAULT),
+        $db_avatar_path,
+        $user['message']]);
+
+    mysqli_stmt_execute($stmt);
 }

@@ -1,25 +1,5 @@
-<nav class="nav">
-    <ul class="nav__list container">
-        <li class="nav__item">
-            <a href="all-lots.html">Доски и лыжи</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Крепления</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Ботинки</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Одежда</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Инструменты</a>
-        </li>
-        <li class="nav__item">
-            <a href="all-lots.html">Разное</a>
-        </li>
-    </ul>
-</nav>
+<?= include_template('_navigation.php', ['categories' => $categories]) ?>
+
 <?php $form_class = isset($errors) ? 'form--invalid' : ''; ?>
 <form class="form container" action="login.php" method="post"> <!-- form--invalid -->
     <h2>Вход</h2>
@@ -31,7 +11,7 @@
     ?>
     <div class="form__item <?= $input_class; ?>"> <!-- form__item--invalid -->
         <label for="email">E-mail*</label>
-        <input id="email" type="text" name="email" placeholder="Введите e-mail" value="<?= $input_value; ?>">
+        <input id="email" type="text" name="email" placeholder="Введите e-mail" value="<?=htmlspecialchars($input_value); ?>">
         <span class="form__error"><?= $error_message; ?></span>
     </div>
     <?php
@@ -42,7 +22,7 @@
     ?>
     <div class="form__item form__item--last <?= $input_class; ?>">
         <label for="password">Пароль*</label>
-        <input id="password" type="password" name="password" placeholder="Введите пароль" value="<?= $input_value; ?>">
+        <input id="password" type="password" name="password" placeholder="Введите пароль" value="<?=htmlspecialchars($input_value); ?>">
         <span class="form__error"><?= $error_message; ?></span>
     </div>
     <button type="submit" class="button">Войти</button>

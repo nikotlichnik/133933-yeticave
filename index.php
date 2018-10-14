@@ -8,13 +8,13 @@ $con = connect_db();
 
 $title = 'YetiCave - Главная страница.';
 
-$categories = ['Доски и лыжи', 'Крепления', 'Ботинки', 'Одежда', 'Инструменты', 'Разное'];
+$categories = get_categories($con);
 
 $page_content = include_template('index.php', ['lots' => get_lots($con), 'categories' => $categories]);
 $content = include_template('layout.php', [
     'content' => $page_content,
     'title' => $title,
     'user' => $user,
-    'categories' => get_categories($con)]);
+    'categories' => $categories]);
 
 print($content);

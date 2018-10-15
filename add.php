@@ -2,6 +2,15 @@
 require_once 'functions.php';
 require_once 'start_session.php';
 
+if (!$user) {
+    http_response_code(403);
+    die();
+}
+
+$title = 'YetiCave - Добавление лота';
+$con = connect_db();
+$categories = get_categories($con);
+
 $required_text_fields = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
 $photo_field = 'lot-photo';
 $price_fields = ['lot-rate', 'lot-step'];
@@ -17,15 +26,6 @@ $max_photo_size = 200000;
 $allowed_photo_mime = ['image/png', 'image/jpeg'];
 $is_photo_required = true;
 $photo_folder = 'upload/';
-
-if (!$user) {
-    http_response_code(403);
-    die();
-}
-
-$title = 'YetiCave - Добавление лота';
-$con = connect_db();
-$categories = get_categories($con);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lot = $_POST;

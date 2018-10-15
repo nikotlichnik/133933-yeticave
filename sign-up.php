@@ -11,18 +11,18 @@ $title = 'YetiCave - Регистрация';
 $con = connect_db();
 $categories = get_categories($con);
 
+$required_fields = ['email', 'password', 'name', 'message'];
+$email_field = 'email';
+$avatar_field = 'avatar';
+
+$allowed_img_mime = ['image/png', 'image/jpeg'];
+$max_avatar_size = 200000;
+$avatar_folder = 'upload/';
+$is_avatar_required = false;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $_POST;
-
-    $required_fields = ['email', 'password', 'name', 'message'];
-    $email_field = 'email';
-    $avatar_field = 'avatar';
     $files = $_FILES;
-
-    $allowed_img_mime = ['image/png', 'image/jpeg'];
-    $max_avatar_size = 200000;
-    $avatar_folder = 'upload/';
-    $is_avatar_required = false;
 
     $errors = [];
     $errors += check_required_text_fields($user, $required_fields);

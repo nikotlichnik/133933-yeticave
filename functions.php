@@ -296,11 +296,12 @@ function format_price($price) {
 /**
  * Проверяет соответствие даты указанному формату и наличие разницы во времени
  * @param string $user_date
- * @param string $format Формат даты, переданной в $user_date
  * @param string $field Имя поля формы с датой
+ * @param string $format Формат даты, переданной в $user_date
+ * @param int $max_year Год, до которого должна быть указана дата
  * @return array
  */
-function check_date($user_date, $format, $field) {
+function check_date($user_date, $field, $format, $max_year) {
     $error = [];
 
     $date = DateTime::createFromFormat($format, $user_date);
@@ -311,8 +312,8 @@ function check_date($user_date, $format, $field) {
         // Проверяем, что дата не больше 2038 года,
         // чтобы не попасть в ограничение типа TIMESTAMP в БД
         $year = (int)$date->format('Y');
-        if ($year > 2038) {
-            $error[$field] = 'Дата не может быть позже 2038 года';
+        if ($year >= $max_year) {
+            $error[$field] = 'Дата должна быть до ' . $max_year . ' года';
         }
 
         // Проверяем соответствие формату

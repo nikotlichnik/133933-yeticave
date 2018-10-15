@@ -2,6 +2,22 @@
 require_once 'functions.php';
 require_once 'start_session.php';
 
+$required_fields = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
+$photo_field = 'lot-photo';
+$price_fields = ['lot-rate', 'lot-step'];
+$date_field = 'lot-date';
+
+$min_price = 1;
+
+$max_year = 2038;
+$date_format = 'd.m.Y'; // ДД.ММ.ГГГГ
+$db_date_format = '%d.%m.%Y'; // ДД.ММ.ГГГГ
+
+$max_photo_size = 200000;
+$allowed_photo_mime = ['image/png', 'image/jpeg'];
+$is_photo_required = true;
+$photo_folder = 'upload/';
+
 if (!$user) {
     http_response_code(403);
 } else {
@@ -11,29 +27,14 @@ if (!$user) {
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lot = $_POST;
-
-        $required_fields = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
-        $photo_field = 'lot-photo';
-        $price_fields = ['lot-rate', 'lot-step'];
-        $date_field = 'lot-date';
-
-        $min_price = 1;
-
-        $date_format = 'd.m.Y'; // ДД.ММ.ГГГГ
-        $db_date_format = '%d.%m.%Y'; // ДД.ММ.ГГГГ
-
         $photo = $_FILES[$photo_field];
-        $max_photo_size = 200000;
-        $allowed_photo_mime = ['image/png', 'image/jpeg'];
-        $is_photo_required = true;
-        $photo_folder = 'upload/';
 
         $errors = [];
         $errors += check_required_text_fields($lot, $required_fields);
         $errors += check_file($photo, $photo_field, $allowed_photo_mime, $max_photo_size, $is_photo_required);
-        $errors += check_date($lot[$date_field], $date_format, $date_field);
+        $errors += check_date($lot[$date_field], $date_field, $date_format, $max_year);
 
-        // Проверка поля с ценой и шагом ставки
+        // Проверка полей с ценой и шагом ставки
         $price_check_options = [
             'options' => [
                 'min_range' => $min_price

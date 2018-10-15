@@ -29,7 +29,7 @@
                             $field_name = 'cost';
                             $input_class = isset($errors[$field_name]) ? 'form__item--invalid' : '';
                             $error_message = $errors[$field_name] ?? '';
-                            $input_value = isset($errors[$field_name]) ? $bet[$field_name] : '';
+                            $input_value = $bet[$field_name] ?? '';
                             ?>
                             <p class="lot-item__form-item <?= $input_class; ?>">
                                 <label for="cost">Ваша ставка</label>

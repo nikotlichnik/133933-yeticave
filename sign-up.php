@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Сохранение изображения
         $db_avatar_path = null;
 
-        if ($files['name']) {
+        if ($files[$avatar_field]['name']) {
             $avatar_name = save_file($files, $avatar_field, $avatar_folder);
             $db_avatar_path = $avatar_folder . $avatar_name;
         }

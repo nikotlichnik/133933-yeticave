@@ -393,51 +393,34 @@ function check_file($files, $field, $allowed_mime, $max_file_size, $is_required)
 
     // Проверка, было ли отправлено
     // поле формы с указанным именем
-    $is_file_sent = false;
+    $is_file_form_sent = false;
     if (isset($files[$field])) {
-        $is_file_sent = true;
+        $is_file_form_sent = true;
     }
 
-    if ($is_required and !$is_file_sent) {
-        $error[$field] = 'Загрузите файл с изображением';
-    } elseif ($is_file_sent) {
-        if ($files[$field]['error'] === UPLOAD_ERR_NO_FILE) {
-            $error[$field] = 'Загрузите файл с изображением';
-        } else {
-            $file_size = $files[$field]['size'];
-            $file_tmp_name = $files[$field]['tmp_name'];
+    // Проверка, был ли прикреплён файл
+    $is_file_attached = false;
+    if (!empty($files[$field]['name'])) {
+        $is_file_attached = true;
+    }
 
-            if ($file_size > $max_file_size) {
-                $error[$field] = 'Максимальный размер файла 200Кб';
-            }
+    if($is_file_form_sent and $is_file_attached) {
+        $file_size = $files[$field]['size'];
+        $file_tmp_name = $files[$field]['tmp_name'];
 
-            $is_correct_mime = is_correct_mime($file_tmp_name, $allowed_mime);
-
-            if (!$is_correct_mime) {
-                $error[$field] = 'Файл должен иметь расширение .jpg, .jpeg или .png';
-            }
+        if ($file_size > $max_file_size) {
+            $error[$field] = 'Максимальный размер файла 200Кб';
         }
+
+        $is_correct_mime = in_array(mime_content_type($file_tmp_name), $allowed_mime, true);
+        if (!$is_correct_mime) {
+            $error[$field] = 'Файл должен иметь расширение .jpg, .jpeg или .png';
+        }
+    } elseif ($is_required){
+        $error[$field] = 'Загрузите файл с изображением';
     }
 
     return $error;
-}
-
-/**
- * Проверяет соответствие файла одному из MIME типов
- * @param string $filename
- * @param array $allowed_mime
- * @return bool
- */
-function is_correct_mime($filename, $allowed_mime) {
-    $is_correct_mime = false;
-
-    foreach ($allowed_mime as $mime) {
-        if (mime_content_type($filename) === $mime) {
-            $is_correct_mime = true;
-        }
-    }
-
-    return $is_correct_mime;
 }
 
 /**

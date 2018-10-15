@@ -4,6 +4,11 @@ require_once 'start_session.php';
 
 $categories = get_categories($con);
 
+$required_fields = ['cost'];
+$field_length = [
+    'cost' => 8
+];
+
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     $lot_id = $_GET['id'];
 
@@ -14,8 +19,9 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     // Если пользователь залогинен и отправлена форма
     if ($user and $_SERVER['REQUEST_METHOD'] === 'POST') {
         $bet = $_POST;
-        $required_fields = ['cost'];
+
         $errors += check_required_text_fields($bet, $required_fields);
+        $errors += check_field_length($bet, $field_length);
 
         // Проверка поля с ценой и шагом ставки
         $bet_check_options = [
@@ -25,13 +31,13 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
         ];
 
         $errors += check_special_value(
-            $bet['cost'],
+            $bet,
             'cost',
             FILTER_VALIDATE_INT,
             'Значение должно быть больше или равно минимальной ставке',
             $bet_check_options);
 
-        if (!$errors){
+        if (!$errors) {
             add_bet($con, $user, $bet, $lot_id);
             $lot = get_lot($con, $lot_id);
         }

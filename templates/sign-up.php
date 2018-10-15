@@ -7,7 +7,7 @@
     $field_name = 'email';
     $input_class = isset($errors[$field_name]) ? 'form__item--invalid' : '';
     $error_message = $errors[$field_name] ?? '';
-    $input_value = $user[$field_name] ?? '';
+    $input_value = $user_form[$field_name] ?? '';
     ?>
     <div class="form__item  <?= $input_class; ?>"> <!-- form__item--invalid -->
         <label for="email">E-mail*</label>
@@ -18,7 +18,7 @@
     $field_name = 'password';
     $input_class = isset($errors[$field_name]) ? 'form__item--invalid' : '';
     $error_message = $errors[$field_name] ?? '';
-    $input_value = $user[$field_name] ?? '';
+    $input_value = $user_form[$field_name] ?? '';
     ?>
     <div class="form__item  <?= $input_class; ?>">
         <label for="password">Пароль*</label>
@@ -29,7 +29,7 @@
     $field_name = 'name';
     $input_class = isset($errors[$field_name]) ? 'form__item--invalid' : '';
     $error_message = $errors[$field_name] ?? '';
-    $input_value = $user[$field_name] ?? '';
+    $input_value = $user_form[$field_name] ?? '';
     ?>
     <div class="form__item  <?= $input_class; ?>">
         <label for="name">Имя*</label>
@@ -40,7 +40,7 @@
     $field_name = 'message';
     $input_class = isset($errors[$field_name]) ? 'form__item--invalid' : '';
     $error_message = $errors[$field_name] ?? '';
-    $input_value = $user[$field_name] ?? '';
+    $input_value = $user_form[$field_name] ?? '';
     ?>
     <div class="form__item  <?= $input_class; ?>">
         <label for="message">Контактные данные*</label>
@@ -70,5 +70,5 @@
     </div>
     <span class="form__error form__error--bottom">Пожалуйста, исправьте ошибки в форме.</span>
     <button type="submit" class="button">Зарегистрироваться</button>
-    <a class="text-link" href="#">Уже есть аккаунт</a>
+    <a class="text-link" href="login.php">Уже есть аккаунт</a>
 </form>

@@ -11,41 +11,48 @@ $title = 'YetiCave - Регистрация';
 $con = connect_db();
 $categories = get_categories($con);
 
+$required_fields = ['email', 'password', 'name', 'message'];
+$field_length = [
+    'email' => 255,
+    'password' => 255,
+    'name' => 128,
+    'message' => 1000
+];
+$email_field = 'email';
+$avatar_field = 'avatar';
+
+$allowed_img_mime = ['image/png', 'image/jpeg'];
+$max_avatar_size = 200000;
+$avatar_folder = 'upload/';
+$is_avatar_required = false;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user = $_POST;
-
-    $required_fields = ['email', 'password', 'name', 'message'];
-
-    $avatar_field = 'avatar';
-    $avatar = $_FILES[$avatar_field];
-
-    $allowed_img_mime = ['image/png', 'image/jpeg'];
-    $max_avatar_size = 200000;
-    $avatar_folder = 'upload/';
-    $is_avatar_required = false;
+    $user_form = $_POST;
+    $files = $_FILES;
 
     $errors = [];
-    $errors += check_required_text_fields($user, $required_fields);
-    $errors += check_file($avatar, $avatar_field, $allowed_img_mime, $max_avatar_size, $is_avatar_required);
-    $errors += check_unique_email($con, $user['email']);
-    $errors += check_special_value($user['email'], 'email', FILTER_VALIDATE_EMAIL, 'Введите корректный email');
+    $errors += check_required_text_fields($user_form, $required_fields);
+    $errors += check_field_length($user_form, $field_length);
+    $errors += check_file($files, $avatar_field, $allowed_img_mime, $max_avatar_size, $is_avatar_required);
+    $errors += check_unique_email($con, $user_form, $email_field);
+    $errors += check_special_value($user_form, $email_field, FILTER_VALIDATE_EMAIL, 'Введите корректный email');
 
     // Вывод ошибок, если они есть, иначе отправка формы
     if (count($errors)) {
         $page_content = include_template('sign-up.php', [
             'categories' => $categories,
-            'user' => $user,
+            'user_form' => $user_form,
             'errors' => $errors]);
     } else {
         // Сохранение изображения
         $db_avatar_path = null;
 
-        if ($avatar['name']) {
-            $avatar_name = save_file($avatar, $avatar_folder);
+        if ($files[$avatar_field]['name']) {
+            $avatar_name = save_file($files, $avatar_field, $avatar_folder);
             $db_avatar_path = $avatar_folder . $avatar_name;
         }
 
-        add_user($con, $user, $db_avatar_path);
+        add_user($con, $user_form, $db_avatar_path);
 
         header('Location: login.php');
     }

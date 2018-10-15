@@ -14,19 +14,19 @@ SET name = 'Разное';
 INSERT INTO users
 SET registration_date = timestamp('20180901'), email = 'vasya@gmail.com', name = 'Василий',
   password = '$2y$10$HBC31u2TnnlnBYbSysh.ROqdER1zuS3i9eVoKxmcZ3x.mzkvqM9fG',
-  avatar_path = 'img/avatar.png', contacts = '8-999-123-45-67'; #password: 123456
+  avatar_path = 'img/avatar.jpg', contacts = '8-999-123-45-67'; #password: 123456
 INSERT INTO users
 SET registration_date = timestamp('20180723'), email = 'nikita@gmail.com', name = 'Никита',
   password = '$2y$10$HBC31u2TnnlnBYbSysh.ROqdER1zuS3i9eVoKxmcZ3x.mzkvqM9fG',
-  avatar_path = 'img/avatar.png', contacts = '8-999-987-65-43'; #password: 123456
+  avatar_path = 'img/avatar.jpg', contacts = '8-999-987-65-43'; #password: 123456
 INSERT INTO users
 SET registration_date = timestamp('20180725'), email = 'petya@gmail.com', name = 'Петр',
   password = '$2y$10$HBC31u2TnnlnBYbSysh.ROqdER1zuS3i9eVoKxmcZ3x.mzkvqM9fG',
-  avatar_path = 'img/avatar.png', contacts = '8-999-987-56-43'; #password: 123456
+  avatar_path = 'img/avatar.jpg', contacts = '8-999-987-56-43'; #password: 123456
 INSERT INTO users
 SET registration_date = timestamp('20180725'), email = 'vova@gmail.com', name = 'Владимир',
   password = '$2y$10$HBC31u2TnnlnBYbSysh.ROqdER1zuS3i9eVoKxmcZ3x.mzkvqM9fG',
-  avatar_path = 'img/avatar.png', contacts = '8-999-907-56-43'; #password: 123456
+  avatar_path = 'img/avatar.jpg', contacts = '8-999-907-56-43'; #password: 123456
 
 INSERT INTO lots
 SET name          = '2014 Rossignol District Snowboard', description = 'Сноуборд', img_path = 'img/lot-1.jpg',

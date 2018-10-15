@@ -78,13 +78,15 @@ function get_lot($con, $id) {
             FROM lots l
               JOIN categories c ON l.category = c.id
               LEFT JOIN bets b ON l.id = b.lot
-            WHERE l.id = $safe_id
+            WHERE l.id = '$safe_id'
             GROUP BY l.id";
     $result = mysqli_query($con, $sql);
     $lot = mysqli_fetch_assoc($result);
 
-    $lot['current_price'] = $lot['current_price'] ?? $lot['start_price'];
-    $lot['min_bet'] = $lot['current_price'] + $lot['bet_step'];
+    if ($lot) {
+        $lot['current_price'] = $lot['current_price'] ?? $lot['start_price'];
+        $lot['min_bet'] = $lot['current_price'] + $lot['bet_step'];
+    }
 
     return $lot;
 }
@@ -295,28 +297,43 @@ function format_price($price) {
 
 /**
  * Проверяет соответствие даты указанному формату и наличие разницы во времени
- * @param string $user_date
+ * @param array $form_data Ассоциативный массив с данными из формы
+ * @param string $field Имя поля формы с датой
  * @param string $format Формат даты, переданной в $user_date
- * @return bool
+ * @param int $max_year Год, до которого должна быть указана дата
+ * @return array
  */
-function validate_date($user_date, $format) {
-    $date = DateTime::createFromFormat($format, $user_date);
-    if (!$date) {
-        return false;
-    }
+function check_date($form_data, $field, $format, $max_year) {
+    $error = [];
 
-    // Проверяем соответствие формату
-    if ($date->format($format) !== $user_date) {
-        return false;
-    }
+    if (!isset($form_data[$field])) {
+        $error[$field] = 'Заполните это поле';
+    } else {
+        $date = DateTime::createFromFormat($format, $form_data[$field]);
 
-    // Проверяем наличие разницы во времени
-    $date_now = new DateTime('now');
-    if ($date < $date_now) {
-        return false;
-    }
+        if (!$date) {
+            $error[$field] = 'Дата должна быть корректной и в формате ДД.ММ.ГГГГ';
+        } else {
+            // Проверяем, что дата не больше 2038 года,
+            // чтобы не попасть в ограничение типа TIMESTAMP в БД
+            $year = (int)$date->format('Y');
+            if ($year >= $max_year) {
+                $error[$field] = 'Дата должна быть до ' . $max_year . ' года';
+            }
 
-    return true;
+            // Проверяем соответствие формату
+            if ($date->format($format) !== $form_data[$field]) {
+                $error[$field] = 'Дата должна быть корректной и в формате ДД.ММ.ГГГГ';
+            }
+
+            // Проверяем наличие разницы во времени
+            $date_now = new DateTime('now');
+            if ($date < $date_now) {
+                $error[$field] = 'Дата должна быть больше текущей';
+            }
+        }
+    }
+    return $error;
 }
 
 /**
@@ -356,7 +373,7 @@ function check_required_text_fields($form_data, $required_fields) {
     $errors = [];
 
     foreach ($required_fields as $field) {
-        if (empty($form_data[$field])) {
+        if (!isset($form_data[$field]) or empty($form_data[$field])) {
             $errors[$field] = 'Заполните это поле';
         }
     }
@@ -365,56 +382,105 @@ function check_required_text_fields($form_data, $required_fields) {
 }
 
 /**
- * @param array $file Ассоциативный массив $_FILES['name']
+ * Проверяет наличие ошибок, связанных с отправкой файла
+ * @param array $files Ассоциативный массив $_FILES
  * @param string $field Имя поля ввода файла
  * @param array $allowed_mime Допустимые MIME типы для файла
  * @param int $max_file_size Максимальный размер файла в байтах
  * @param bool $is_required Обязательность поля ввода
  * @return array
  */
-function check_file($file, $field, $allowed_mime, $max_file_size, $is_required) {
+function check_file($files, $field, $allowed_mime, $max_file_size, $is_required) {
     $error = [];
 
-    if ($is_required or $file['name']) {
-        if ($file['error'] === UPLOAD_ERR_NO_FILE) {
-            $error[$field] = 'Загрузите файл с изображением';
-        } else {
-            $file_size = $file['size'];
-            $file_tmp_name = $file['tmp_name'];
+    // Проверка, было ли отправлено
+    // поле формы с указанным именем
+    $is_file_form_sent = false;
+    if (isset($files[$field])) {
+        $is_file_form_sent = true;
+    }
 
-            if ($file_size > $max_file_size) {
-                $error[$field] = 'Максимальный размер файла 200Кб';
-            }
+    // Проверка, был ли прикреплён файл
+    $is_file_attached = false;
+    if (!empty($files[$field]['name'])) {
+        $is_file_attached = true;
+    }
 
-            $is_correct_mime = false;
-            foreach ($allowed_mime as $mime) {
-                if (mime_content_type($file_tmp_name) === $mime) {
-                    $is_correct_mime = true;
-                }
-            }
+    if ($is_file_form_sent and $is_file_attached) {
+        $file_size = $files[$field]['size'];
+        $file_tmp_name = $files[$field]['tmp_name'];
 
-            if (!$is_correct_mime) {
-                $error[$field] = 'Файл должен иметь расширение .jpg, .jpeg или .png';
-            }
+        if ($file_size > $max_file_size) {
+            $error[$field] = 'Максимальный размер файла 200Кб';
         }
+
+        $is_correct_mime = in_array(mime_content_type($file_tmp_name), $allowed_mime, true);
+        if (!$is_correct_mime) {
+            $error[$field] = 'Файл должен иметь расширение .jpg, .jpeg или .png';
+        }
+    } elseif ($is_required) {
+        $error[$field] = 'Загрузите файл с изображением';
     }
 
     return $error;
 }
 
 /**
+ * Проверяет, существует ли категория, отправленная пользователем
+ * @param mysqli $con
+ * @param array $form_data Ассоциативный массив с данными формы
+ * @param string $field_name Имя поля формы с датой
+ * @return array
+ */
+function check_category($con, $form_data, $field_name) {
+    $error = [];
+
+    if (isset($form_data[$field_name])) {
+        $safe_id = mysqli_real_escape_string($con, $form_data[$field_name]);
+        $sql = "SELECT EXISTS(SELECT * FROM categories WHERE id='$safe_id')";
+        $res = mysqli_query($con, $sql);
+        $is_exist = mysqli_fetch_array($res)[0];
+
+        if (!$is_exist) {
+            $error[$field_name] = 'Выберите категорию из списка';
+        }
+    }
+    return $error;
+}
+
+/**
+ * Проверяет, не выходят ли длины значений полей за ограничения схемы БД
+ * @param array $form_data Ассоциативный массив с данными формы
+ * @param array $lengths Ассоциативный массив с максимальными длинами полей
+ * @return array
+ */
+function check_field_length($form_data, $lengths) {
+    $errors = [];
+
+    foreach ($lengths as $field_name => $length) {
+        if (isset($form_data[$field_name])) {
+            if (strlen($form_data[$field_name]) > $length) {
+                $errors[$field_name] = 'Значение не может быть больше ' . $length . ' символов';
+            }
+        }
+    }
+
+    return $errors;
+}
+
+/**
  * Валидирует переданное значение указанным фильтром
- * @param string|int $value
+ * @param array $form_data Ассоциативный массив с данными из формы
  * @param string $field_name
  * @param int $filter
  * @param string $error_text
  * @param array $options
  * @return array
  */
-function check_special_value($value, $field_name, $filter, $error_text, $options = []) {
+function check_special_value($form_data, $field_name, $filter, $error_text, $options = []) {
     $error = [];
 
-    if (!filter_var($value, $filter, $options)) {
+    if (!isset($form_data[$field_name]) or !filter_var($form_data[$field_name], $filter, $options)) {
         $error[$field_name] = $error_text;
     }
 
@@ -424,35 +490,40 @@ function check_special_value($value, $field_name, $filter, $error_text, $options
 /**
  * Проверяет, есть ли указанный email в БД
  * @param mysqli $con
- * @param string $email
+ * @param array $form_data Ассоциативный массив с данными из формы
+ * @param string $field Имя поля из формы
  * @return array
  */
-function check_unique_email($con, $email) {
+function check_unique_email($con, $form_data, $field) {
     $error = [];
-    $safe_email = mysqli_real_escape_string($con, $email);
 
-    $sql = "SELECT id FROM users WHERE email = '$safe_email'";
-    $result = mysqli_query($con, $sql);
+    if (isset($form_data[$field])) {
+        $safe_email = mysqli_real_escape_string($con, $form_data[$field]);
 
-    if (mysqli_num_rows($result)) {
-        $error['email'] = 'Введённый email уже используется';
+        $sql = "SELECT id FROM users WHERE email = '$safe_email'";
+        $result = mysqli_query($con, $sql);
+
+        if (mysqli_num_rows($result)) {
+            $error[$field] = 'Введённый email уже используется';
+        }
     }
 
     return $error;
 }
 
 /**
- * Сохраняет файл из формы и возврящает сгенерированное имя
- * @param array $file Ассоциативный массив $_FILES['name']
+ * Сохраняет файл из формы и возвращает сгенерированное имя
+ * @param array $files Ассоциативный массив $_FILES
+ * @param string $field Имя поля с файлом из формы
  * @param string $folder Строка в формате "foldername/"
  * @return string
  */
-function save_file($file, $folder) {
+function save_file($files, $field, $folder) {
     $file_path = __DIR__ . '/' . $folder;
-    $file_name_parts = explode('.', $file['name']);
+    $file_name_parts = explode('.', $files[$field]['name']);
     $file_extension = end($file_name_parts);
     $file_name = uniqid() . '.' . $file_extension;
-    move_uploaded_file($file['tmp_name'], $file_path . $file_name);
+    move_uploaded_file($files[$field]['tmp_name'], $file_path . $file_name);
 
     return $file_name;
 }
@@ -525,7 +596,7 @@ function get_href_search_attr($search_query, $page) {
  * @param string $db_photo_path Путь к изображению лота
  * @param string $db_date_format Формат даты $lot['lot-date'] для функции STR_TO_DATE()
  */
-function add_lot($con, $user, $lot, $db_photo_path, $db_date_format){
+function add_lot($con, $user, $lot, $db_photo_path, $db_date_format) {
     $sql = "INSERT INTO lots (name, description, img_path, start_price, bet_step, expiration_date, author, category)
                 VALUES (?, ?, ?, ?, ?, STR_TO_DATE(?, '$db_date_format'), ?, ?)";
 
@@ -549,7 +620,7 @@ function add_lot($con, $user, $lot, $db_photo_path, $db_date_format){
  * @param array $bet Ассоциативный массив с данными из формы о ставке
  * @param int $lot_id Идентификатор лота
  */
-function add_bet($con, $user, $bet, $lot_id){
+function add_bet($con, $user, $bet, $lot_id) {
     $sql = "INSERT INTO bets (bet, author, lot) VALUES (?, ?, ?)";
     $stmt = db_get_prepare_stmt($con, $sql, [
         $bet['cost'],
@@ -566,7 +637,7 @@ function add_bet($con, $user, $bet, $lot_id){
  * @param array $user Ассоциативный массив с данными из формы о пользователе
  * @param string $db_avatar_path Путь к аватару пользователя
  */
-function add_user($con, $user, $db_avatar_path){
+function add_user($con, $user, $db_avatar_path) {
     $sql = "INSERT INTO users (email, name, password, avatar_path, contacts)
                 VALUES (?, ?, ?, ?, ?)";
 

@@ -11,10 +11,10 @@ $title = 'YetiCave - Вход';
 $con = connect_db();
 $categories = get_categories($con);
 
+$required_fields = ['email', 'password'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login = $_POST;
-
-    $required_fields = ['email', 'password'];
 
     $errors = [];
     $errors += check_required_text_fields($login, $required_fields);

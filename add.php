@@ -11,10 +11,18 @@ $title = 'YetiCave - Добавление лота';
 $con = connect_db();
 $categories = get_categories($con);
 
-$required_text_fields = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
+$required_fields = ['lot-name', 'category', 'message', 'lot-rate', 'lot-step', 'lot-date'];
+$field_length = [
+    'lot-name' => 255,
+    'message' => 1000,
+    'lot-rate' => 8,
+    'lot-step' => 8
+];
 $photo_field = 'lot-photo';
-$price_fields = ['lot-rate', 'lot-step'];
 $date_field = 'lot-date';
+$category_field = 'category';
+$price_fields = ['lot-rate', 'lot-step'];
+
 
 $min_price = 1;
 
@@ -32,9 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $files = $_FILES;
 
     $errors = [];
-    $errors += check_required_text_fields($lot, $required_text_fields);
+    $errors += check_required_text_fields($lot, $required_fields);
+    $errors += check_field_length($lot, $field_length);
     $errors += check_file($files, $photo_field, $allowed_photo_mime, $max_photo_size, $is_photo_required);
     $errors += check_date($lot, $date_field, $date_format, $max_year);
+    $errors += check_category($con, $lot, $category_field);
 
     // Проверка полей с ценой и шагом ставки
     $price_check_options = [

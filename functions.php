@@ -78,13 +78,15 @@ function get_lot($con, $id) {
             FROM lots l
               JOIN categories c ON l.category = c.id
               LEFT JOIN bets b ON l.id = b.lot
-            WHERE l.id = $safe_id
+            WHERE l.id = '$safe_id'
             GROUP BY l.id";
     $result = mysqli_query($con, $sql);
     $lot = mysqli_fetch_assoc($result);
 
-    $lot['current_price'] = $lot['current_price'] ?? $lot['start_price'];
-    $lot['min_bet'] = $lot['current_price'] + $lot['bet_step'];
+    if ($lot) {
+        $lot['current_price'] = $lot['current_price'] ?? $lot['start_price'];
+        $lot['min_bet'] = $lot['current_price'] + $lot['bet_step'];
+    }
 
     return $lot;
 }
@@ -404,7 +406,7 @@ function check_file($files, $field, $allowed_mime, $max_file_size, $is_required)
         $is_file_attached = true;
     }
 
-    if($is_file_form_sent and $is_file_attached) {
+    if ($is_file_form_sent and $is_file_attached) {
         $file_size = $files[$field]['size'];
         $file_tmp_name = $files[$field]['tmp_name'];
 
@@ -416,11 +418,54 @@ function check_file($files, $field, $allowed_mime, $max_file_size, $is_required)
         if (!$is_correct_mime) {
             $error[$field] = 'Файл должен иметь расширение .jpg, .jpeg или .png';
         }
-    } elseif ($is_required){
+    } elseif ($is_required) {
         $error[$field] = 'Загрузите файл с изображением';
     }
 
     return $error;
+}
+
+/**
+ * Проверяет, существует ли категория, отправленная пользователем
+ * @param mysqli $con
+ * @param array $form_data Ассоциативный массив с данными формы
+ * @param string $field_name Имя поля формы с датой
+ * @return array
+ */
+function check_category($con, $form_data, $field_name) {
+    $error = [];
+
+    if (isset($form_data[$field_name])) {
+        $safe_id = mysqli_real_escape_string($con, $form_data[$field_name]);
+        $sql = "SELECT EXISTS(SELECT * FROM categories WHERE id='$safe_id')";
+        $res = mysqli_query($con, $sql);
+        $is_exist = mysqli_fetch_array($res)[0];
+
+        if (!$is_exist) {
+            $error[$field_name] = 'Выберите категорию из списка';
+        }
+    }
+    return $error;
+}
+
+/**
+ * Проверяет, не выходят ли длины значений полей за ограничения схемы БД
+ * @param array $form_data Ассоциативный массив с данными формы
+ * @param array $lengths Ассоциативный массив с максимальными длинами полей
+ * @return array
+ */
+function check_field_length($form_data, $lengths) {
+    $errors = [];
+
+    foreach ($lengths as $field_name => $length) {
+        if (isset($form_data[$field_name])) {
+            if (strlen($form_data[$field_name]) > $length) {
+                $errors[$field_name] = 'Значение не может быть больше ' . $length . ' символов';
+            }
+        }
+    }
+
+    return $errors;
 }
 
 /**

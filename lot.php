@@ -25,7 +25,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
         ];
 
         $errors += check_special_value(
-            $bet['cost'],
+            $bet,
             'cost',
             FILTER_VALIDATE_INT,
             'Значение должно быть больше или равно минимальной ставке',

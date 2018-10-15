@@ -15,9 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $_POST;
 
     $required_fields = ['email', 'password', 'name', 'message'];
-
+    $email_field = 'email';
     $avatar_field = 'avatar';
-    $avatar = $_FILES[$avatar_field];
+    $files = $_FILES;
 
     $allowed_img_mime = ['image/png', 'image/jpeg'];
     $max_avatar_size = 200000;
@@ -26,9 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $errors = [];
     $errors += check_required_text_fields($user, $required_fields);
-    $errors += check_file($avatar, $avatar_field, $allowed_img_mime, $max_avatar_size, $is_avatar_required);
-    $errors += check_unique_email($con, $user['email']);
-    $errors += check_special_value($user['email'], 'email', FILTER_VALIDATE_EMAIL, 'Введите корректный email');
+    $errors += check_file($files, $avatar_field, $allowed_img_mime, $max_avatar_size, $is_avatar_required);
+    $errors += check_unique_email($con, $user, $email_field);
+    $errors += check_special_value($user, $email_field, FILTER_VALIDATE_EMAIL, 'Введите корректный email');
 
     // Вывод ошибок, если они есть, иначе отправка формы
     if (count($errors)) {
@@ -40,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Сохранение изображения
         $db_avatar_path = null;
 
-        if ($avatar['name']) {
-            $avatar_name = save_file($avatar, $avatar_folder);
+        if ($files['name']) {
+            $avatar_name = save_file($files, $avatar_field, $avatar_folder);
             $db_avatar_path = $avatar_folder . $avatar_name;
         }
 
